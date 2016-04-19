@@ -4,7 +4,6 @@
 from scapy.all import *
 from modules.banners import *
 from modules.arpoisoning import *
-from modules.utils import *
 import os
 import sys
 import threading
@@ -43,8 +42,5 @@ gateway_mac = get_mac(gateway)
 print "[*] Gateway %s está em %s" % (gateway, gateway_mac)
 target_mac = get_mac(target)
 print "[*] Target %s está em %s" % (target, target_mac)
-
-iptables()
-set_ip_forwarding(1)
 
 poison_target(gateway,gateway_mac,target,target_mac)

