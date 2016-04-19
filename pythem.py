@@ -4,6 +4,7 @@
 from scapy.all import *
 from modules.banners import *
 from modules.arpoisoning import *
+from modules.utils import *
 import os
 import sys
 import threading
@@ -23,9 +24,7 @@ parser = argparse.ArgumentParser(description="PytheM v{} = '{}'".format(pythem_v
 
 parser.add_argument("-i","--interface",required=True, type=str, help="Interface de rede para ouvir.")
 parser.add_argument("-g","--gateway",required=True, type=str, help="Endereço IP do gateway.")
-parser.add_argument("-t","--target",type=str, help="Endereço IP do alvo.")
-parser.add_argument("-a","--all", action="store_true", help="Define como alvo todos os host.")
-parser.add_argument("-s","--sites",action="store_true", help="Mostra todos os sites e pesquisas realizadas.")
+parser.add_argument("-t","--target",required=True, type=str, help="Endereço/Range IP do alvo.")
 
 if len(sys.argv) == 1:
     parser.print_help()
@@ -44,5 +43,8 @@ gateway_mac = get_mac(gateway)
 print "[*] Gateway %s está em %s" % (gateway, gateway_mac)
 target_mac = get_mac(target)
 print "[*] Target %s está em %s" % (target, target_mac)
+
+iptables()
+set_ip_forwarding(1)
 
 poison_target(gateway,gateway_mac,target,target_mac)
