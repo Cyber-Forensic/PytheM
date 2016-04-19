@@ -40,7 +40,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/root/.virtualenvs/pythem"
+VIRTUAL_ENV="/root/.virtualenvs/PytheM"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
