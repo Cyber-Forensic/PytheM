@@ -16,14 +16,8 @@ class ARPspoof(object):
 
 	def __init__(self, gateway, target):
 
-		#arrumar essa gambi dpois mano kk
-
 		self.gateway = gateway
 		self.target = target
-		gateway_mac = self.get_mac(self.gateway)
-		target_mac = self.get_mac(self.target)
-		self.gateway_mac = gateway_mac
-		self.target_mac = target_mac
 
 	def restore_target(self):
 		print "[*] Restaurando alvo..."
