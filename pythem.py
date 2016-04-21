@@ -50,6 +50,7 @@ if __name__ == '__main__':
 	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo. ex: 'pythem.py -i wlan0 --spoof -g 10.0.0.1 -t 10.0.0.2'.")
 	parser.add_argument("--scan", type=str, help="Faz scan em uma Range IP para descobrir hosts. ex: 'pythem.py -i wlan0 -s 192.168.0.0/24'.")
 	parser.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: 'pythem.py -i wlan0 --spoof [spoof options]'")
+	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [default: rep]')
 
 
 	if len(sys.argv) == 1:
@@ -66,12 +67,10 @@ if __name__ == '__main__':
 	targets = args.targets
 	myip = get_myip(interface)
 	mymac = get_mymac(interface)
-	
-		#Bug sinistro quando tira o hashtag do spoof 
-			#concertar na v1.2
+	arpmode = args.arpmode
 
-	#spoof = ARPspoof(gateway,targets)
 	scan = ARPscanner(range,interface)
+	spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)	
 
 
 	if args.scan:
@@ -83,12 +82,11 @@ if __name__ == '__main__':
 			sys.exit(1)
 
 
-	#elif args.spoof:
-	#	try:
-	#		spoof.spoof()	
-	#		
-	#	
-	#
-	#	except KeyboardInterrupt:
-	#		print "[*] Finalizado pelo usuário."
-	#		sys.exit(1)
+	elif args.spoof:
+		try:
+			spoof.start()
+			
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			spoof.stop()
+			sys.exit(1)

