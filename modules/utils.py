@@ -3,6 +3,25 @@
 
 import os
 import sys
+import socket
+import fcntl
+import struct
+
+
+
+def get_myip(interface):
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	return socket.inet_ntoa(fcntl.ioctl(
+		s.fileno(),
+		0x8915,
+		struct.pack('256s', interface[:15])
+	)[20:24])
+
+
+def get_mymac(interface):
+    	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    	info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', interface[:15]))
+    	return ''.join(['%02x:' % ord(char) for char in info[18:24]])[:-1]		
 
 
 def set_ip_forwarding(value):
