@@ -53,7 +53,7 @@ if __name__ == '__main__':
 	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [default: rep]')
 
 
-	if len(sys.argv) == 1:
+	if len(sys.argv) <= 2:
     		parser.print_help()
     		sys.exit(1)
 
