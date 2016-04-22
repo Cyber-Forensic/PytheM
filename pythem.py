@@ -70,7 +70,6 @@ if __name__ == '__main__':
 	arpmode = args.arpmode
 
 	scan = ARPscanner(range,interface)
-	spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)	
 
 
 	if args.scan:
@@ -84,6 +83,8 @@ if __name__ == '__main__':
 
 	elif args.spoof:
 		try:
+			from modules.arpoisoner import ARPspoof
+			spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)	
 			spoof.start()
 			
 		except KeyboardInterrupt:
