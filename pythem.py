@@ -49,8 +49,8 @@ if __name__ == '__main__':
 	parser.add_argument("--scan", type=str, help="Faz scan em uma Range IP para descobrir hosts. ex: 'pythem.py -i wlan0 -s 192.168.0.0/24'.")
 	parser.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: 'pythem.py -i wlan0 --spoof [spoof options]'")
 	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [default: rep]')
-	parser.add_argument("--sniff", action='store_true', help="Sniffa pacotes de rede utilizando um dos filtros. Ex: 'python.py -i wlan0 --spoof -g 192.168.1.0/24 --sniff'")
-	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http'], help=' modo de sniffing: dns ou http [padrao=dns]')
+	parser.add_argument("--sniff", action='store_true', help="Sniffa pacotes de rede utilizando um dos filtros. Ex: 'python.py -i wlan0 --spoof -g 192.168.1.1 --sniff'")
+	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http'], help=" modo de sniffing: dns ou http [padrao=dns]. ex: 'pythem.py -i wlan0 --spoof -g 192.168.0.1 --sniff --filter http '")
 
 	if len(sys.argv) <= 2:
     		parser.print_help()
