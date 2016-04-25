@@ -25,8 +25,11 @@ class Sniffer(object):
 				print str(ip_src) + " --> " + str(ip_dst) + " : " + "(" + p.getlayer(DNS).qd.qname + ")"
 
 	def HTTPsniff(self, p):
-		for p.haslayer(TCP) and p.getlayer(TCP).dport == 80 and p.haslayer(Raw):
-			print p.getlayer(Raw).load
+		if IP in p:
+			ip_src = p[IP].src
+			ip_dst = p[IP].dst
+			if p.haslayer(TCP) and p.getlayer(TCP).dport == 80 and p.haslayer(Raw):
+				print str(ip_src) + " --> " + str(ip_dst) + "\n" + p.getlayer(Raw).load
 
 
         def start(self):

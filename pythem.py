@@ -21,7 +21,6 @@
 from scapy.all import *
 from modules.banners import*
 from modules.utils import*
-from modules.arpscanner import *
 import os
 import sys
 import threading
@@ -30,8 +29,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.1'
-pythem_codename = 'Anaconda'
+pythem_version = '0.1.2'
+pythem_codename = 'Naja'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -71,11 +70,12 @@ if __name__ == '__main__':
 	filter = args.filter
 	
 
-	scan = ARPscanner(range,interface)
 
 
 	if args.scan:
 		try:
+			from modules.arpscanner import ARPscanner
+			scan = ARPscanner(range,interface)
 			scan.scan()
 
 		except KeyboardInterrupt:
