@@ -149,7 +149,7 @@ class ARPspoof(object):
 			except Exception as e:
 				resp = ''
 				if "Interrupted system call" not in e:
-					print "[!] Exception occurred while poisoning {}: {}".format(targetip, e)
+					print "[!] Exceção ocorreu enquanto envenenava {}: {}".format(targetip, e)
 			if len(resp) > 0:
 				targetmac = resp[0][1].hwsrc
 				self.arp_cache[targetip] = targetmac
