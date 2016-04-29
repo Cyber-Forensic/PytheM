@@ -12,7 +12,7 @@ import socket
 class Server(paramiko.ServerInterface):
 	def __init__(self, server, port):
 		self.event = threading.Event()
-		self.HOST_KEY = paramiko.RSAKey(filename='test_rsa.key')
+		self.HOST_KEY = paramiko.RSAKey(filename='config/test_rsa.key')
 		self.USERNAME = 'nightmare'
 		self.PASSWORD = 'qwerty'
 		self.server = server
