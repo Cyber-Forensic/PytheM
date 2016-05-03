@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 #coding=UTF-8
 
-import pygeoip 
+from pygeoip import pygeoip 
 
 
 class Geoip(object):
