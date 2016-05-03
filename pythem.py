@@ -29,8 +29,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.3'
-pythem_codename = 'Taipan'
+pythem_version = '0.1.4'
+pythem_codename = 'Snake King'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -46,10 +46,12 @@ if __name__ == '__main__':
 	parser.add_argument("-i","--interface",required=True, type=str, help="Interface de rede para ouvir.")
 	parser.add_argument("-g","--gateway",dest='gateway', help="Endereço IP do gateway. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1'.")
 	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1 -t 10.0.0.2'.")
-	parser.add_argument("--scan", type=str, help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan 192.168.0.0/24'.")
+	parser.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
+	parser.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
 	parser.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway -t alvos'")
-	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep]')
-	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http'], help=" modo de sniffing: dns ou http [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
+	parser.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes.")
+	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual <porta> [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
 	parser.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -s 0.0.0.0 -p 7001")
 	parser.add_argument("-s","--server", dest='server')
 	parser.add_argument("-p","--port", dest='port')
@@ -62,30 +64,33 @@ if __name__ == '__main__':
 
 
 	interface = args.interface
-	range = args.scan
 	gateway = args.gateway
 	targets = args.targets
 	myip = get_myip(interface)
 	mymac = get_mymac(interface)
+	
+	mode = args.mode
 	arpmode = args.arpmode
 	filter = args.filter
+	
 	server = args.server
 	port = args.port
 
-
-
+	
+		
+			
 	if args.scan:
 		try:
-			from modules.arpscanner import ARPscanner
-			scan = ARPscanner(range,interface)
-			scan.scan()
-
+			from modules.scanner import Scanner
+			scan = Scanner(targets,interface,mode)
+			scan.start()
+		
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
+				
 
-
-	elif args.spoof:
+	elif args.spoof and args.sniff:
 		try:
 			from modules.arpoisoner import ARPspoof
 			spoof = ARPspoof(gateway,targets, interface, arpmode, myip, mymac)
@@ -98,6 +103,30 @@ if __name__ == '__main__':
 			spoof.stop()
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
+	
+	elif args.spoof:
+		try:
+			from modules.arpoisoner import ARPspoof
+			while(1):
+				sleep(4)
+				spoof = ARPspoof(gateway,targets,interface,arpmode, myip, mymac)
+				spoof.start()
+			
+		except KeyboardInterrupt:
+			spoof.stop()
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)
+	
+	elif args.sniff:
+		try:
+			from modules.sniffer import Sniffer
+			sniff = Sniffer(interface,filter)
+			sniff.start()
+		
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)
+		
 
 	elif args.ssh:
 		try:
@@ -108,3 +137,10 @@ if __name__ == '__main__':
 			server.stop()
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
+
+
+	else:
+		print "Selecione uma opção válida."
+		sys.exit(1)
+
+	

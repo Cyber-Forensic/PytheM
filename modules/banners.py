@@ -15,7 +15,7 @@ banner1 = """\n
            \__`\/ /
                \_|
 
-|_PytheM - Python man in the middle tool
+|_PytheM - Python man in the middle/pentesting tool
 \n"""
 
 

