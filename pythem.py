@@ -142,8 +142,8 @@ if __name__ == '__main__':
 	elif args.geoip:
 		try:
 			from modules.geoip import Geoip
-			database = "config/GeoLiteCity.dat"
-			iptracker = Geoip(targets,database)
+			path = "config/GeoLiteCity.dat"
+			iptracker = Geoip(targets,path)
 		
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."

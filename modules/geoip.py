@@ -2,7 +2,8 @@
 #coding=UTF-8
 
 from pygeoip import pygeoip 
-
+import os
+import sys
 
 class Geoip(object):
 
