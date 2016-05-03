@@ -21,6 +21,7 @@
 from scapy.all import *
 from modules.banners import*
 from modules.utils import*
+from time import sleep
 import os
 import sys
 import threading
@@ -29,8 +30,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.4'
-pythem_codename = 'Snake King'
+pythem_version = '0.1.5'
+pythem_codename = 'Corn Snake'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -52,9 +53,10 @@ if __name__ == '__main__':
 	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
 	parser.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes.")
 	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual <porta> [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
-	parser.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -s 0.0.0.0 -p 7001")
-	parser.add_argument("-s","--server", dest='server')
-	parser.add_argument("-p","--port", dest='port')
+	parser.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -s -p 7001")
+	parser.add_argument("-s","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
+	parser.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
+	parser.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
 
 	if len(sys.argv) < 2:
     		parser.print_help()
@@ -106,11 +108,10 @@ if __name__ == '__main__':
 	
 	elif args.spoof:
 		try:
+			print "[*] Utilize --sniff para sniffar pacotes interceptados, poisoning em threading."
 			from modules.arpoisoner import ARPspoof
-			while(1):
-				sleep(4)
-				spoof = ARPspoof(gateway,targets,interface,arpmode, myip, mymac)
-				spoof.start()
+			spoof = ARPspoof(gateway,targets,interface,arpmode, myip, mymac)
+			spoof.start()
 			
 		except KeyboardInterrupt:
 			spoof.stop()
@@ -138,6 +139,15 @@ if __name__ == '__main__':
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
 
+	elif args.geoip:
+		try:
+			from modules.geoip import Geoip
+			database = "config/GeoLiteCity.dat"
+			iptracker = Geoip(targets,database)
+		
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)	
 
 	else:
 		print "Selecione uma opção válida."

