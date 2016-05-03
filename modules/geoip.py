@@ -2,15 +2,16 @@
 #coding=UTF-8
 
 from pygeoip import pygeoip 
-
+import os
+import sys
 
 class Geoip(object):
 
 	
 
-	def __init__(self, target):
+	def __init__(self, target,path):
 		self.target = target
-		self.gip = pygeoip.GeoIP("../config/GeoLiteCity.dat")
+		self.gip = pygeoip.GeoIP(path)
 		self.search()
 		
 	def search(self):
