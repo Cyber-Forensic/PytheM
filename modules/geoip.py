@@ -11,8 +11,12 @@ class Geoip(object):
 
 	def __init__(self, target,path):
 		self.target = target
-		self.gip = pygeoip.GeoIP(path)
-		self.search()
+		try:
+			self.gip = pygeoip.GeoIP(path)
+			self.search()
+		
+		except:
+			print "[!] Você precisa estar dentro da pasta principal para executar o modulo geoip."
 		
 	def search(self):
 		addr = self.target

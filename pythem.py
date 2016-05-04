@@ -30,8 +30,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.5'
-pythem_codename = 'Corn Snake'
+pythem_version = '0.1.6'
+pythem_codename = 'Coral Snake'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -56,6 +56,10 @@ if __name__ == '__main__':
 	parser.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -s -p 7001")
 	parser.add_argument("-s","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
 	parser.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
+	parser.add_argument("--bruter", action='store_true', help="Inicializa um ataque de força bruta, necessita de wordlist.")
+	parser.add_argument("--service", type=str, dest='service', choices=["ssh"],help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
+	parser.add_argument("-f","--file",dest='file',help ="Caminho para a wordlist.")
+	parser.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
 	parser.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
 
 	if len(sys.argv) < 2:
@@ -78,8 +82,9 @@ if __name__ == '__main__':
 	server = args.server
 	port = args.port
 
-	
-		
+	service = args.service
+	file = args.file
+	username = args.username
 			
 	if args.scan:
 		try:
@@ -138,6 +143,16 @@ if __name__ == '__main__':
 			server.stop()
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
+
+	elif args.bruter:
+		try:
+			from modules.ssh_brutter import SSHbrutus
+			brutus = SSHbrutus(targets, username, file)
+			brutus.start()
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)
+
 
 	elif args.geoip:
 		try:
