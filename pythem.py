@@ -43,8 +43,7 @@ if __name__ == '__main__':
 # Opções
 
 	parser = argparse.ArgumentParser(description="PytheM v{} = '{}'".format(pythem_version, pythem_codename),version="{} - '{}'".format(pythem_version,pythem_codename),usage="pythem.py -i interface [plugin] [plugin_options]", epilog="By: m4n3dw0lf")
-
-	parser.add_argument("-i","--interface",required=True, type=str, help="Interface de rede para ouvir.")
+	parser.add_argument("-i","--interface",required=True,type=str, help="Interface de rede para ouvir.")
 	parser.add_argument("-g","--gateway",dest='gateway', help="Endereço IP do gateway. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1'.")
 	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1 -t 10.0.0.2'.")
 	parser.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
@@ -61,8 +60,10 @@ if __name__ == '__main__':
 	parser.add_argument("-f","--file",dest='file',help ="Caminho para a wordlist.")
 	parser.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
 	parser.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
+	parser.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py --decode base64")  
+	parser.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py --encode hexa")
 
-	if len(sys.argv) < 2:
+	if len(sys.argv) < 1:
     		parser.print_help()
     		sys.exit(1)
 
@@ -74,7 +75,8 @@ if __name__ == '__main__':
 	targets = args.targets
 	myip = get_myip(interface)
 	mymac = get_mymac(interface)
-	
+	based = str(args.decode)
+	basee = str(args.encode)
 	mode = args.mode
 	arpmode = args.arpmode
 	filter = args.filter
@@ -86,6 +88,20 @@ if __name__ == '__main__':
 	file = args.file
 	username = args.username
 			
+	
+
+	if args.decode:
+		try:print decode(based)
+		except KeyboardInterrupt:
+			print "\n[*] Finalizado pelo usuário."
+			sys.exit(0)
+	if args.encode:
+		try:print encode(basee)
+		except KeyboardInterrupt:
+			print "\n[*] Finalizado pelo usuário."
+			sys.exit(0)
+
+
 	if args.scan:
 		try:
 			from modules.scanner import Scanner

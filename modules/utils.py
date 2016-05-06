@@ -9,6 +9,18 @@ import struct
 
 
 
+def decode(base):
+        text = raw_input("[*] Texto a ser decodificado: ")
+        decode = text.decode('{}'.format(base))
+	result = "[+] Resultado: {}".format(decode)
+	return result
+
+def encode(base):
+        text = raw_input("[*] Texto a ser codificado: ")
+	encode = text.encode('{}'.format(base))
+	result = "[+] Resultado: {}".format(encode)
+	return result
+
 def get_myip(interface):
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	return socket.inet_ntoa(fcntl.ioctl(
@@ -32,4 +44,5 @@ def set_ip_forwarding(value):
 def iptables():
 	os.system('iptables -P INPUT ACCEPT && iptables -P FORWARD ACCEPT && iptables -F && iptables -X && iptables -t nat -F && iptables -t nat -X')
 	print "[*] Redefinindo iptables"
+
 
