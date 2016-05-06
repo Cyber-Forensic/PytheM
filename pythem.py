@@ -63,7 +63,7 @@ if __name__ == '__main__':
 	parser.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py --decode base64")  
 	parser.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py --encode hexa")
 
-	if len(sys.argv) < 1:
+	if len(sys.argv) < 2:
     		parser.print_help()
     		sys.exit(1)
 
