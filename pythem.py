@@ -60,8 +60,8 @@ if __name__ == '__main__':
 	parser.add_argument("-f","--file",dest='file',help ="Caminho para a wordlist.")
 	parser.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
 	parser.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
-	parser.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py --decode base64")  
-	parser.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py --encode hexa")
+	parser.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --decode base64")  
+	parser.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --encode hexa")
 
 	if len(sys.argv) < 2:
     		parser.print_help()
