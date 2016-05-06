@@ -5,6 +5,7 @@ from scapy.all import *
 from netaddr import IPNetwork, IPRange, IPAddress, AddrFormatError
 import random
 import sys
+import os
 
 class Scanner(object):
 
@@ -71,95 +72,91 @@ class Scanner(object):
 			elif(resp.haslayer(ICMP)):
 				if(int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
 					print "[-]{}:{} está filtrada.".format(self.targetip,str(dstPort))
-			
 
 	def MANUALscanner(self):
 		
 		liveCounter = 0
-		try:
-			self.portManual.append(input("[+] Informe a porta: "))
-			self.ports = self.portManual
-			print "\n[+] TCP Scan manual inicializado..."
-			for target in self.range:
-				self.targetip = str(target)
-				resp = sr1(IP(dst=str(self.targetip))/ICMP(),timeout=2,verbose=0)
-                                if (str(type(resp)) == "<type 'NoneType'>"):
-                                        print "\n[*]" + str(self.targetip) + " está desligado ou não respondendo.\n"
-                                elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
-                                        print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
-                                else:
-                                        print "\n[*]" + str(self.targetip) + " está online: "
-                                        self.portScan(str(self.targetip),self.portManual)
-                                        liveCounter += 1
-                        print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
+		self.portManual.append(input("[+] Informe a porta: "))
+		self.ports = self.portManual
+		print "\n[+] TCP Scan manual inicializado..."
+		for target in self.range:
+			self.targetip = str(target)
+			resp = sr1(IP(dst=str(self.targetip))/ICMP(),timeout=2,verbose=0)
+                        if (str(type(resp)) == "<type 'NoneType'>"):
+                                print "\n[*]" + str(self.targetip) + " está desligado ou não respondendo.\n"
+                        elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+                                print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
+                        else:
+                                print "\n[*]" + str(self.targetip) + " está online: "
+                                self.portScan(str(self.targetip),self.portManual)
+                                liveCounter += 1
+          	print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
 
 		
-		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
-			sys.exit(1)
-
-
 
         def TCPscanner(self):
 
 		liveCounter = 0
-                try:
-                        self.ports = self.portRange
-			print "\n[+] TCP Scan inicializado..."
-			for target in self.range:
-                                self.targetip = str(target)
-                                resp = sr1(IP(dst=str(self.targetip))/ICMP(),timeout=2,verbose=0)
-                                if (str(type(resp)) == "<type 'NoneType'>"):
-                                        print "\n[*]" + str(self.targetip) + " está desligado ou não respondendo.\n"
-                                elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
-                                        print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
-				else:
-                                        print "\n[*]" + str(self.targetip) + " está online: "
-					self.portScan(str(self.targetip),self.portRange)
-                                        liveCounter += 1
-			print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
+                self.ports = self.portRange
+		print "\n[+] TCP Scan inicializado..."
+		for target in self.range:
+	
+			self.targetip = str(target)
+                        resp = sr1(IP(dst=str(self.targetip))/ICMP(),timeout=2,verbose=0)
+                        if (str(type(resp)) == "<type 'NoneType'>"):
+                                 print "\n[*]" + str(self.targetip) + " está desligado ou não respondendo.\n"
+                        elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+                                 print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
+			else:
+                                 print "\n[*]" + str(self.targetip) + " está online: "
+	      			 self.portScan(str(self.targetip),self.portRange)
+                                 liveCounter += 1
+				 print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
 
 
-                except KeyboardInterrupt:
-                        print "Finalizado pelo usuário."
-                        sys.exit(1)
 	
 
 	def ARPscanner(self):
-		try:
-			print "\n[+] ARP Scan inicializado...\n"
-			conf.verb = 0
-			for target in self.range:
-				targetip = str(target)
-				packet = Ether(dst="ff:ff:ff:ff:ff:ff:ff")/ARP(op="who-has",pdst=targetip)
-				
-				try:
-					
-					resp, _ = sndrcv(self.socket, packet, timeout=3, verbose=False)
-					if len(resp) > 0:
-						targetmac = resp[0][1].hwsrc
-						print "[+] IP:{} tem o MAC:{}\n".format(targetip, targetmac)
-					else:
-						print "[-] Não foi possivel resolver o endereço MAC de {}\n".format(targetip)
-				except Exception as e:
-					resp = ''
-					if "Interrupted system call" not in e:
-						print "[!] Exceção ocorreu ao scanear {}: {}".format(targetip, e)
-					
-		
+		print "\n[+] ARP Scan inicializado...\n"
+		conf.verb = 0
+		for target in self.range:
+			targetip = str(target)
+			packet = Ether(dst="ff:ff:ff:ff:ff:ff:ff")/ARP(op="who-has",pdst=targetip)
+			
+			resp, _ = sndrcv(self.socket, packet, timeout=3, verbose=False)
+			if len(resp) > 0:
+				targetmac = resp[0][1].hwsrc
+				print "[+] IP:{} tem o MAC:{}\n".format(targetip, targetmac)
+			else:
+				print "[-] Não foi possivel resolver o endereço MAC de {}\n".format(targetip)
 
-		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
-			sys.exit(1)
+		
 
 	def start(self):
 		
 		if self.mode == 'manual':
-			self.MANUALscanner()
+			try:
+				self.MANUALscanner()
+	                except KeyboardInterrupt:
+        	                print "[*] Finalizado pelo usuário."
+                	        os.system('kill %d' % os.getpid())
+                	        sys.exit(1)
+			
 		elif self.mode == 'tcp':
-                        self.TCPscanner()
-                elif self.mode == 'arp':
-			self.socket = conf.L2socket(iface=self.interface)
-			self.ARPscanner()
+                        try:
+				self.TCPscanner()
+	                except KeyboardInterrupt:
+        	                print "[*] Finalizado pelo usuário."
+                	        os.system('kill %d' % os.getpid())
+                       		sys.exit(1)
+                
+		elif self.mode == 'arp': 
+			try:
+				self.socket = conf.L2socket(iface=self.interface)
+				self.ARPscanner()
+	                except KeyboardInterrupt:
+	                        print "[*] Finalizado pelo usuário."
+        	                os.system('kill %d' % os.getpid())
+                	        sys.exit(1)
 		else:
 			print "[!] Modo de scan inválido ./pythem.py --help para verificar sua sintaxe."
