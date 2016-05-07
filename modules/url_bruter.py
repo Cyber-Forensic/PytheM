@@ -59,16 +59,11 @@ class URLbrutus(object):
 		return words
 
 
-	def dir_bruter(self,extensions=None):
+	def dir_bruter(self):
 		while not self.word_queue.empty():
 			attempt = self.word_queue.get()
 			attempt_list = []
-
-			if "." not in attempt:
-				attempt_list.append("%s" % attempt)
-			else:
-				attempt_list.append("/%s" % attempt)
-
+			attempt_list.append("%s" % attempt)
 			for brute in attempt_list:
 				url = "%s%s" % (self.target_url,urllib.quote(brute))
 				try:
@@ -80,7 +75,7 @@ class URLbrutus(object):
 						print "[%d] ==> %s" % (response.code,url)
 				except urllib2.URLError,e:
 					if hasattr(e, 'code') and e.code != 404:
-						print "!!! %d => %s" % (e,code,url)
+						print "!!! %d => %s" % (e.code,url)
 					pass
 
 	
