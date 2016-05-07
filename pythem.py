@@ -30,8 +30,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.6'
-pythem_codename = 'Coral Snake'
+pythem_version = '0.1.7'
+pythem_codename = 'Viper'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -43,25 +43,41 @@ if __name__ == '__main__':
 # Opções
 
 	parser = argparse.ArgumentParser(description="PytheM v{} = '{}'".format(pythem_version, pythem_codename),version="{} - '{}'".format(pythem_version,pythem_codename),usage="pythem.py -i interface [plugin] [plugin_options]", epilog="By: m4n3dw0lf")
+
 	parser.add_argument("-i","--interface",required=True,type=str, help="Interface de rede para ouvir.")
-	parser.add_argument("-g","--gateway",dest='gateway', help="Endereço IP do gateway. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1'.")
-	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo. ex: './pythem.py -i wlan0 --spoof -g 10.0.0.1 -t 10.0.0.2'.")
-	parser.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
-	parser.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
-	parser.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway -t alvos'")
-	parser.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
-	parser.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes.")
-	parser.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual <porta> [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
-	parser.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -s -p 7001")
-	parser.add_argument("-s","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
+	parser.add_argument("-g","--gateway",dest='gateway', help="Endereço IP do gateway.")
+	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo.")
+	parser.add_argument("-f","--file",dest='file',help ="Caminho para um arquivo.")
+
+	scan = parser.add_argument_group('[S] Scanning')
+	scan.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
+	scan.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
+
+	mitm = parser.add_argument_group('[M] Man-In-The-Middle')
+	mitm.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
+	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
+	mitm.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes. ex: './pythem.py -i wlan0 --sniff --filter manual")
+	mitm.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	
+	remote = parser.add_argument_group('[R] Remote')
+	remote.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -l -p 7001")
+	remote.add_argument("-l","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
 	parser.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
-	parser.add_argument("--bruter", action='store_true', help="Inicializa um ataque de força bruta, necessita de wordlist.")
-	parser.add_argument("--service", type=str, dest='service', choices=["ssh"],help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
-	parser.add_argument("-f","--file",dest='file',help ="Caminho para a wordlist.")
-	parser.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
-	parser.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
-	parser.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --decode base64")  
-	parser.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --encode hexa")
+
+	web = parser.add_argument_group('[W] Web')
+	web.add_argument("--urlbuster", action='store_true', help="Inicializa teste de parametros em uma URL através de uma wordlist. ex: ./pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/deUMaCEM.txt")
+
+	bruter = parser.add_argument_group('[B] Brute-Force')
+	bruter.add_argument("--bruter", action='store_true', help="Inicializa um ataque de força bruta, necessita de wordlist.")
+	bruter.add_argument("--service", type=str, dest='service', choices=["ssh"], help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
+	bruter.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
+	
+	utils = parser.add_argument_group('[U] Utils')
+	utils.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --decode base64")  
+	utils.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --encode hex")
+	utils.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
+
+	
 
 	if len(sys.argv) < 2:
     		parser.print_help()
@@ -69,25 +85,28 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-
 	interface = args.interface
 	gateway = args.gateway
 	targets = args.targets
+
 	myip = get_myip(interface)
 	mymac = get_mymac(interface)
-	based = str(args.decode)
-	basee = str(args.encode)
+
 	mode = args.mode
+
 	arpmode = args.arpmode
 	filter = args.filter
 	
 	server = args.server
 	port = args.port
 
+
 	service = args.service
 	file = args.file
 	username = args.username
 			
+	based = str(args.decode)
+	basee = str(args.encode)
 	
 
 	if args.decode:
@@ -160,15 +179,24 @@ if __name__ == '__main__':
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
 
-	elif args.bruter:
+	elif args.urlbuster:
 		try:
-			from modules.ssh_brutter import SSHbrutus
+			from modules.url_bruter import URLbrutus
+			buster = URLbrutus(targets, file)
+			buster.start()
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)
+
+	elif args.bruter:
+
+		try:
+			from modules.ssh_bruter import SSHbrutus
 			brutus = SSHbrutus(targets, username, file)
 			brutus.start()
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
-
 
 	elif args.geoip:
 		try:
