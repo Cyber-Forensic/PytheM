@@ -22,6 +22,8 @@ import urllib2
 import threading
 import Queue
 import urllib
+import sys
+import os
 
 
 class URLbrutus(object):
@@ -33,7 +35,7 @@ class URLbrutus(object):
 		self.resume = None
 		self.user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:19.0) Gecko/20100101 Firefor/19.0"
 		self.word_queue = self.build_wordlist(self.wordlist)
-		
+		self.extensions = [".txt",".php",".bak",".orig",".inc",".doc"]
 
 
 	def build_wordlist(self, wordlist):
@@ -59,11 +61,21 @@ class URLbrutus(object):
 		return words
 
 
-	def dir_bruter(self):
+	def dir_bruter(self, word_queue,extensions=None):
 		while not self.word_queue.empty():
 			attempt = self.word_queue.get()
 			attempt_list = []
 			attempt_list.append("%s" % attempt)
+			if "." not in attempt:
+				attempt_list.append("%s/" % attempt)
+			else:
+				attempt_list.append("%s" % attempt)
+			if extensions:
+				for extension in extensions:
+					attempt_list.append("%s%s" % (attempt,extension))
+
+
+
 			for brute in attempt_list:
 				url = "%s%s" % (self.target_url,urllib.quote(brute))
 				try:
@@ -74,13 +86,18 @@ class URLbrutus(object):
 					if len(response.read()):
 						print "[%d] ==> %s" % (response.code,url)
 				except urllib2.URLError,e:
-					if hasattr(e, 'code') and e.code != 404:
+					if e.code != 404:
 						print "!!! %d => %s" % (e.code,url)
 					pass
 
 	
 	def start(self):
-		print "[+] Content URLbuster inicializado."
-		for i in range(self.threads):
-			t = threading.Thread(target=self.dir_bruter)
-			t.start()
+		try:
+			print "[+] Content URLbuster inicializado."
+			for i in range(self.threads):
+				t = threading.Thread(target=self.dir_bruter,args=(self.word_queue,self.extensions,))
+				t.start()
+		except KeyboardInterrupt:
+			print "[*] Finalizado pelo usuário."
+			os.system('kill %d' % os.getpid())
+			sys.exit(0)
