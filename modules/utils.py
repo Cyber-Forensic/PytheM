@@ -63,3 +63,25 @@ def iptables():
 	print "[*] Redefinindo iptables"
 
 
+def module_check(module):
+	confirm = raw_input("[-] Você checou se seu sistema tem [%s] instalado?, gostaria de tentar instalá-lo? (apt-get install %s será executado caso sim [s/n]: " % (modules,module))
+	if confirm == 's':
+		os.system('apt-get install %s' % module)
+	else:
+		print "[-] Finalizado"
+		sys.exit(1)
+
+def startmon(mon_iface):
+	iface = str(mon_iface)
+	try:
+		os.system("airmon-ng check kill")
+		os.system("airmon-ng start %s" % iface)
+	except:
+		module_check('aircrack-ng')
+def stopmon(mon_iface):
+	iface = str(mon_iface)
+	try:
+		os.system("airmon-ng stop %s" % iface)
+		os.system("service network-manager restart")
+	except Exception as e:
+		print "[*] Exceção encontrada: {}".format(e)

