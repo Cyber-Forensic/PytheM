@@ -30,8 +30,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.7'
-pythem_codename = 'Viper'
+pythem_version = '0.1.8'
+pythem_codename = 'Krait'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -49,35 +49,35 @@ if __name__ == '__main__':
 	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo.")
 	parser.add_argument("-f","--file",dest='file',help ="Caminho para um arquivo.")
 
-	bruter = parser.add_argument_group('[B] Brute-Force')
+	bruter = parser.add_argument_group('[Brute-Force]')
 	bruter.add_argument("--bruter", action='store_true', help="Inicializa um ataque de força bruta, necessita de wordlist.")
 	bruter.add_argument("--service", type=str, dest='service', choices=["ssh"], help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
 	bruter.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
 
-	mitm = parser.add_argument_group('[M] Man-In-The-Middle')
+	mitm = parser.add_argument_group('[Man-In-The-Middle]')
 	mitm.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
 	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
 	mitm.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes. ex: './pythem.py -i wlan0 --sniff --filter manual")
 	mitm.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
 	
-	remote = parser.add_argument_group('[R] Remote')
+	remote = parser.add_argument_group('[Remote]')
 	remote.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -l -p 7001")
 	remote.add_argument("-l","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
 	parser.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
 
-	scan = parser.add_argument_group('[S] Scanning')
+	scan = parser.add_argument_group('[Scanning]')
 	scan.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
 	scan.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
 
-	utils = parser.add_argument_group('[U] Utils')
+	utils = parser.add_argument_group('[Utils]')
 	utils.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --decode base64")  
 	utils.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --encode hex")
 	utils.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
 
-	web = parser.add_argument_group('[W] Web')
+	web = parser.add_argument_group('[Web]')
 	web.add_argument("--urlbuster", action='store_true', help="Inicializa teste de parametros em uma URL através de uma wordlist. ex: ./pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/deUMaCEM.txt")
 
-	wireless = parser.add_argument_group('[Wi] Wireless')
+	wireless = parser.add_argument_group('[Wireless]')
 	wireless.add_argument("--startmon", action='store_true' ,help='Inicializa modo monitor na interface desejada. ex. "./pythem.py -i wlan0 --startmon"')		
 	wireless.add_argument("--stopmon",action='store_true', help='Finaliza o modo monitor na interface préviamente especificado. ex: "./pythem.py -i wlan0mon --stopmon"')
 	wireless.add_argument("--ssid",action='store_true',help="Utiliza a interface em modo monitor para descobrir o SSID de APs por perto.")
