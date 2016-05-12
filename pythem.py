@@ -54,12 +54,15 @@ if __name__ == '__main__':
 	bruter.add_argument("--service", type=str, dest='service', choices=["ssh"], help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
 	bruter.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
 
+	scan = parser.add_argument_group('[S] Scanning')
+	scan.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
+	scan.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
+
 	mitm = parser.add_argument_group('[M] Man-In-The-Middle')
 	mitm.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
 	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
 	mitm.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes. ex: './pythem.py -i wlan0 --sniff --filter manual")
 	mitm.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
-	
 	
 	remote = parser.add_argument_group('[R] Remote')
 	remote.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -l -p 7001")
@@ -70,6 +73,14 @@ if __name__ == '__main__':
 	scan.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
 	scan.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
 
+	web = parser.add_argument_group('[W] Web')
+	web.add_argument("--urlbuster", action='store_true', help="Inicializa teste de parametros em uma URL através de uma wordlist. ex: ./pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/deUMaCEM.txt")
+
+	bruter = parser.add_argument_group('[B] Brute-Force')
+	bruter.add_argument("--bruter", action='store_true', help="Inicializa um ataque de força bruta, necessita de wordlist.")
+	bruter.add_argument("--service", type=str, dest='service', choices=["ssh"], help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
+	bruter.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
+	
 	utils = parser.add_argument_group('[U] Utils')
 	utils.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --decode base64")  
 	utils.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --encode hex")
@@ -97,6 +108,9 @@ if __name__ == '__main__':
 	startmon = args.startmon
 	stopmon = args.stopmon
 
+	myip = get_myip(interface)
+	mymac = get_mymac(interface)
+
 	mode = args.mode
 
 	arpmode = args.arpmode
@@ -105,11 +119,11 @@ if __name__ == '__main__':
 	server = args.server
 	port = args.port
 
+
 	service = args.service
 	file = args.file
 	username = args.username
-	
-		
+			
 	based = str(args.decode)
 	basee = str(args.encode)
 	
