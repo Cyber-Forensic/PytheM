@@ -3,20 +3,21 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
-
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 from scapy.all import *
 import sys
@@ -36,16 +37,16 @@ class PcapReader(object):
 
 	ARQUIVO - [ {} ]
 
-help:   		Mostra esta mensagem de ajuda.
-clear:			Limpa a tela.
-exit/quit:		Finaliza o programa
+help:   		Print this help message
+clear:			Clean the screen, same as GNU/Linux OS "clear"
+exit/quit:		Terminate the program
 
-show:			Mostra todos os pacotes e seus respectivos números.
-conversations:		Mostra pictograma com as conversas entre hosts do arquivo analisado.
-filter:			Abre dialogo para filtragem no arquivo .pcap, utilizar filtro no formato tcpdump.
+show:			Display all the packets and their index numbers.
+conversations:		Display pictogram with conversations between hosts from the analyzed file.
+filter:			Opens dialogue to filter expressions on .pcap file, filter in the tcpdump expression filter format.
 
-packetdisplay [num]:	Mostra o pacote selecionado pelo número por completo.
-packetload [num]:	Mostra o conteúdo do pacote selecionado por seu número.
+packetdisplay [num]:	Display the full content of index selected packet.
+packetload [num]:	Display the payload of index selected packet.
 """.format(self.file)	
 
 	def All(self,p):
@@ -68,20 +69,20 @@ packetload [num]:	Mostra o conteúdo do pacote selecionado por seu número.
 
                                 if self.input_list[0]  == 'packetdisplay':
                                         try:self.packets[int(self.input_list[1])].show()
-					except Exception as e: print "[!] Exceção encontrada: {}".format(e)
+					except Exception as e: print "[!] Exception caught: {}".format(e)
 		
 				elif self.input_list[0] == 'filter':
 					try:
-						self.filt = raw_input("[+] Informe o filtro: ")
+						self.filt = raw_input("[+] Input the filter: ")
 						sniff(offline="{}".format(self.file),filter = "{}".format(self.filt),prn=self.All)
-					except Exception as e: print "[!] Exceção encontrada: {}".format(e)
+					except Exception as e: print "[!] Exception caught: {}".format(e)
 
 				elif self.input_list[0] == 'packetload':
 					try:
-						print "[+] Payload do pacote {}: ".format(self.input_list[1])
+						print "[+] Packet {} payload: ".format(self.input_list[1])
 						self.filter_lookup(self.packets[int(self.input_list[1])])
 					
-					except Exception as e: print "[!] Exceção encontrada: {}".format(e)
+					except Exception as e: print "[!] Exception caught: {}".format(e)
 
 
 				elif self.input_list[0]  == 'exit':
@@ -96,18 +97,18 @@ packetload [num]:	Mostra o conteúdo do pacote selecionado por seu número.
 					os.system('ls')
 				elif self.input_list[0] == 'summary':
 					try:self.packets.summary()
-					except Exception as e: print "[!] Exceção encontrada: {}".format(e)
+					except Exception as e: print "[!] Exception caught: {}".format(e)
 				elif self.input_list[0] == 'show':
 					try:self.packets.show()
-					except Exception as e: print "[!] Exceção encontrada: {}".format(e)	
+					except Exception as e: print "[!] Exception caught: {}".format(e)	
 				elif self.input_list[0] == 'conversations':
 					try:self.packets.conversations()
-					except Exception as e: print "[!] Exceção encontrada: {}".format(e)
+					except Exception as e: print "[!] Exception caught: {}".format(e)
 				else:
-					print "[-] Informe uma opção válida."				
+					print "[-] Select a valid option."				
 
                         except KeyboardInterrupt:
-                                print "[*] Finalizado pelo usuário."
+                                print "[*] User requested shutdown."
                                 sys.exit(0)
 
 

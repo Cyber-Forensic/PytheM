@@ -3,20 +3,21 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
-
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 
 from scapy.all import *
@@ -32,10 +33,10 @@ class Sniffer(object):
 		self.interface = interface
 		self.filter = filter
 		if self.filter == 'manual':
-			print "[?] Utilizar o filtro no formato do tcpdump ex: 'host 192.168.0.1 and port 80'"
-			self.filt = raw_input("[+] Informe o filtro: ")
-			print "[+] Sniffer com o filtro: '{}' inicializado.".format(self.filt)
-		self.wrpcap = raw_input("[*] Deseja gravar o resultado em arquivo .pcap no diretório atual?[s/n]: ")
+			print "[?] Use the filter as tcpdump expression format ex: 'host 192.168.0.1 and port 80'"
+			self.filt = raw_input("[+] Enter the filter: ")
+			print "[+] Sniffer with the filter: '{}' initialized.".format(self.filt)
+		self.wrpcap = raw_input("[*] Wish to write a .pcap file with the results in the actual directory?[y/n]: ")
 
 	def All(self, p):
 		print p
@@ -64,62 +65,62 @@ class Sniffer(object):
 				print str(ip_src) + " --> " + str(ip_dst) + "\n" + p.getlayer(Raw).load
 
 	def start(self):
-                if self.filter == 'http' and self.wrpcap == 's':
+                if self.filter == 'http' and self.wrpcap == 'y':
 			try:
-				print "[+] Sniffer HTTP inicializado"
+				print "[+] HTTP sniffer initialized"
 				p = sniff(iface=self.interface,filter = "port 80", prn = self.HTTPsniff)
                         	time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 				wrpcap("pythem{}.pcap".format(time),p)
 			
 			except KeyboardInterrupt:
-				print "\n[!] Finalizado pelo usuário."
+				print "\n[!] User requested shutdown."
 
 
-		elif self.filter == 'dns' and self.wrpcap == 's':
+		elif self.filter == 'dns' and self.wrpcap == 'y':
 			try:
-				print "[+] Sniffer DNS inicializado"
+				print "[+] DNS sniffer initialized"
        	                	p = sniff(iface=self.interface, filter = "port 53", prn = self.DNSsniff)
                         	time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 				wrpcap("pythem{}.pcap".format(time),p)
 
 			except KeyboardInterrupt:
-				print "\n[!] Finalizado pelo usuário."
+				print "\n[!] User requested shutdown."
 
-		elif self.filter == 'manual' and self.wrpcap == 's':
+		elif self.filter == 'manual' and self.wrpcap == 'y':
 			try:
 				p = sniff(iface=self.interface, filter ="{}".format(self.filt), prn=self.MANUALsniff)
                         	time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 				wrpcap("pythem{}.pcap".format(time),p)
 			except KeyboardInterrupt:
-				print "\n[!] Finalizado pelo usuário."
+				print "\n[!] User requested shutdown."
 
 
-		elif self.filter == 'all' and self.wrpcap == 's':
+		elif self.filter == 'all' and self.wrpcap == 'y':
 			try:
 				p = sniff(iface=self.interface, prn=self.All)
 				time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 				wrpcap("pythem{}.pcap".format(time),p)
 			except KeyboardInterrupt:
-				print "\n[!] Finalizado pelo usuário."
+				print "\n[!] User requested shutdown."
 
-		elif self.filter == 'all' and self.wrpcap != 's':
-			print "[+] Sniffer Global inicializado"
+		elif self.filter == 'all' and self.wrpcap != 'y':
+			print "[+] Global sniffer initialized"
 			p = sniff(iface=self.interface, prn=self.All)
-			print "\n[!] Finalizado pelo usuário."
+			print "\n[!] User requested shutdown."
 
-                elif self.filter == 'http' and self.wrpcap != 's':
-                        print "[+] Sniffer HTTP inicializado"
+                elif self.filter == 'http' and self.wrpcap != 'y':
+                        print "[+] HTTP sniffer initialized"
                         p = sniff(iface=self.interface,filter ="port 80",prn = self.HTTPsniff, store = 0)
-                        print "\n[!] Finalizado pelo usuário."
+                        print "\n[!] User requested shutdown."
 
 
-                elif self.filter == 'dns' and self.wrpcap != 's':
-                        print "[+] Sniffer DNS inicializado"
+                elif self.filter == 'dns' and self.wrpcap != 'y':
+                        print "[+] DNS sniffer initialized"
                         p = sniff(iface=self.interface, filter = "port 53", prn = self.DNSsniff, store = 0)
-                        print "\n[!] Finalizado pelo usuário."
+                        print "\n[!] User requested shutdown."
 
 
-                elif self.filter == 'manual' and self.wrpcap != 's':
+                elif self.filter == 'manual' and self.wrpcap != 'y':
                         p = sniff(iface=self.interface, filter ="{}".format(self.filt), prn=self.MANUALsniff, store = 0)
-                        print "\n[!] Finalizado pelo usuário."
+                        print "\n[!] User requested shutdown."
 

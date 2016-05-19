@@ -3,20 +3,21 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
-
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 import os
 import sys
@@ -27,15 +28,15 @@ import struct
 
 
 def decode(base):
-        text = raw_input("[*] Texto a ser decodificado: ")
+        text = raw_input("[*] String to be decoded: ")
         decode = text.decode('{}'.format(base))
-	result = "[+] Resultado: {}".format(decode)
+	result = "[+] Result: {}".format(decode)
 	return result
 
 def encode(base):
-        text = raw_input("[*] Texto a ser codificado: ")
+        text = raw_input("[*] String to be encoded: ")
 	encode = text.encode('{}'.format(base))
-	result = "[+] Resultado: {}".format(encode)
+	result = "[+] Result: {}".format(encode)
 	return result
 
 def get_myip(interface):
@@ -57,18 +58,18 @@ def set_ip_forwarding(value):
 	with open('/proc/sys/net/ipv4/ip_forward', 'w') as file:
 		file.write(str(value))
 		file.close()
-		print "[*] Liberando o forwarding de pacotes"
+		print "[*] Enabling the packet forwarding."
 def iptables():
 	os.system('iptables -P INPUT ACCEPT && iptables -P FORWARD ACCEPT && iptables -F && iptables -X && iptables -t nat -F && iptables -t nat -X')
-	print "[*] Redefinindo iptables"
+	print "[*] Iptables redefined"
 
 
 def module_check(module):
-	confirm = raw_input("[-] Você checou se seu sistema tem [%s] instalado?, gostaria de tentar instalá-lo? (apt-get install %s será executado caso sim [s/n]: " % (modules,module))
-	if confirm == 's':
+	confirm = raw_input("[-] Do you checked if your system has [%s] installed?, do you like to try installing? (apt-get install %s will be executed if yes [y/n]: " % (modules,module))
+	if confirm == 'y':
 		os.system('apt-get install %s' % module)
 	else:
-		print "[-] Finalizado"
+		print "[-] Terminated"
 		sys.exit(1)
 
 def startmon(mon_iface):
@@ -84,4 +85,4 @@ def stopmon(mon_iface):
 		os.system("airmon-ng stop %s" % iface)
 		os.system("service network-manager restart")
 	except Exception as e:
-		print "[*] Exceção encontrada: {}".format(e)
+		print "[*] Exception caught: {}".format(e)

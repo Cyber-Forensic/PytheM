@@ -3,20 +3,21 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
-
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 from scapy.all import *
 from netaddr import IPNetwork, IPRange, IPAddress, AddrFormatError
@@ -71,7 +72,7 @@ class Scanner(object):
                         return target_list
 
                 except AddrFormatError:
-                        sys.exit("[!]Especifique um Endereço/Range IP válido como alvo.")
+                        sys.exit("[!]Select a valid IP address/range as target with -t.")
 
 
 
@@ -81,34 +82,34 @@ class Scanner(object):
 			srcPort = random.randint(1025,65534)
 			resp = sr1(IP(dst=self.targetip)/TCP(sport=srcPort,dport=dstPort,flags="S"),timeout=1,verbose=0)
 			if (str(type(resp)) == "<type 'NoneType'>"):
-				print "[-]{}:{} está filtrada.".format(self.targetip,str(dstPort))
+				print "[-]{}:{} is filtered.".format(self.targetip,str(dstPort))
 			elif(resp.haslayer(TCP)):
 				if (resp.haslayer(TCP)):
 					if(resp.getlayer(TCP).flags == 0x12):
 						send_rst = sr(IP(dst=self.targetip)/TCP(sport=srcPort, dport=dstPort, flags="R"), timeout=1,verbose=0)
-						print "[+]{}:{} está aberta.".format(self.targetip,str(dstPort))
+						print "[+]{}:{} is open.".format(self.targetip,str(dstPort))
 			elif(resp.haslayer(ICMP)):
 				if(int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
-					print "[-]{}:{} está filtrada.".format(self.targetip,str(dstPort))
+					print "[-]{}:{} is filtered.".format(self.targetip,str(dstPort))
 
 	def MANUALscanner(self):
 		
 		liveCounter = 0
-		self.portManual.append(input("[+] Informe a porta: "))
+		self.portManual.append(input("[+] Enter the port: "))
 		self.ports = self.portManual
-		print "\n[+] TCP Scan manual inicializado..."
+		print "\n[+] Manual TCP Scan initialized..."
 		for target in self.range:
 			self.targetip = str(target)
 			resp = sr1(IP(dst=str(self.targetip))/ICMP(),timeout=2,verbose=0)
                         if (str(type(resp)) == "<type 'NoneType'>"):
-                                print "\n[*]" + str(self.targetip) + " está desligado ou não respondendo.\n"
+                                print "\n[*]" + str(self.targetip) + " is down or not responding.\n"
                         elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
-                                print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
+                                print "\n[*]" + str(self.targetip) + " is blocking ICMP.\n"
                         else:
-                                print "\n[*]" + str(self.targetip) + " está online: "
+                                print "\n[*]" + str(self.targetip) + " is online: "
                                 self.portScan(str(self.targetip),self.portManual)
                                 liveCounter += 1
-          	print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
+          	print "De "+ str(len(self.range)) + " scannead hosts, " + str(liveCounter) + " are online."
 
 		
 
@@ -116,34 +117,34 @@ class Scanner(object):
 
 		liveCounter = 0
                 self.ports = self.portRange
-		print "\n[+] TCP Scan inicializado..."
+		print "\n[+] TCP Scan initialized..."
 		for target in self.range:
 	
 			self.targetip = str(target)
                         resp = sr1(IP(dst=str(self.targetip))/ICMP(),timeout=2,verbose=0)
                         if (str(type(resp)) == "<type 'NoneType'>"):
-                                 print "\n[*]" + str(self.targetip) + " está desligado ou não respondendo.\n"
+                                 print "\n[*]" + str(self.targetip) + " is down or not responding.\n"
                         elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
                                  print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
 			else:
                                  print "\n[*]" + str(self.targetip) + " está online: "
 	      			 self.portScan(str(self.targetip),self.portRange)
                                  liveCounter += 1
-		print "De "+ str(len(self.range)) + " máquinas scaneadas, " + str(liveCounter) + " estão online."
+		print "De "+ str(len(self.range)) + " scannead hosts, " + str(liveCounter) + " are online."
 
 
 	
 
 	def ARPscanner(self):
                 try:
-	                print "\n[+] ARP Scan inicializado...\n"
+	                print "\n[+] ARP Scan initialized...\n"
          	        conf.verb = 0
                         ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=self.arprange), timeout = 2, iface=self.interface, inter=0.1)
                         for snd,rcv in ans:
-                                print rcv.sprintf(r"[+] IP: %ARP.psrc% tem o MAC: %Ether.src%")
+                                print rcv.sprintf(r"[+] IP: %ARP.psrc% has the MAC: %Ether.src%")
 
                 except KeyboardInterrupt:
-                        print "\n[*] Finalizado pelo usuário."
+                        print "\n[*] User requested shutdown."
                         sys.exit(1)
 
 
@@ -154,7 +155,7 @@ class Scanner(object):
 			try:
 				self.MANUALscanner()
 	                except KeyboardInterrupt:
-        	                print "[*] Finalizado pelo usuário."
+        	                print "[*] User requested shutdown."
                 	        os.system('kill %d' % os.getpid())
                 	        sys.exit(1)
 			
@@ -162,7 +163,7 @@ class Scanner(object):
                         try:
 				self.TCPscanner()
 	                except KeyboardInterrupt:
-        	                print "[*] Finalizado pelo usuário."
+        	                print "[*] User requested shutdown."
                 	        os.system('kill %d' % os.getpid())
                        		sys.exit(1)
                 
@@ -171,8 +172,8 @@ class Scanner(object):
 				self.socket = conf.L2socket(iface=self.interface)
 				self.ARPscanner()
 			except KeyboardInterrupt:
-				print "[*] Finalizado pelo usuário."
+				print "[*] User requested shutdown."
 				os.system('kill %d' % os.getpid())
 				sys.exit(1)
 		else:
-			print "[!] Modo de scan inválido ./pythem.py --help para verificar sua sintaxe."
+			print "[!] Invalid scan mode ./pythem.py --help to check your sintax."

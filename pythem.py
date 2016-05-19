@@ -3,20 +3,22 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
 
 from scapy.all import *
 from modules.banners import*
@@ -30,11 +32,11 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.9'
-pythem_codename = 'Cascavel'
+pythem_version = '0.2.0'
+pythem_codename = 'Saw-scaled Viper'
 
 if os.geteuid() !=0:
-	sys.exit("[-] Apenas para roots kido!")
+	sys.exit("[-] Only for roots kid!")
 
 
 
@@ -44,46 +46,47 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description="PytheM v{} = '{}'".format(pythem_version, pythem_codename),version="{} - '{}'".format(pythem_version,pythem_codename),usage="pythem.py -i interface [plugin] [plugin_options]", epilog="By: m4n3dw0lf")
 
-	parser.add_argument("-i","--interface",required=True,type=str, help="Interface de rede para ouvir.")
-	parser.add_argument("-g","--gateway",dest='gateway', help="Endereço IP do gateway.")
-	parser.add_argument("-t","--targets",dest='targets', help="Endereço/Range IP do alvo.")
-	parser.add_argument("-f","--file",dest='file',help ="Caminho para um arquivo.")
+	parser.add_argument("-i","--interface",required=True,type=str, help="Network interface to hear.")
+	parser.add_argument("-g","--gateway",dest='gateway', help="Gateway IP addres.")
+	parser.add_argument("-t","--targets",dest='targets', help="Target IP Address/Range.")
+	parser.add_argument("-f","--file",dest='file',help ="Path to a file.")
 
 	bruter = parser.add_argument_group('[Brute-Force]')
-	bruter.add_argument("--bruter", action='store_true', help="Inicializa um ataque de força bruta, necessita de wordlist.")
-	bruter.add_argument("--service", type=str, dest='service', choices=["ssh"], help="Serviço a ser atacado por força bruta. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
-	bruter.add_argument("-u","--username",dest='username',help ="Usuário a ser utilizado no ataque de força bruta.")
+	bruter.add_argument("--bruter", action='store_true', help="Initialize a service brute-force attack, requires a wordlist.")
+	bruter.add_argument("--service", type=str, dest='service', choices=["ssh"], help="Brute-force service to be attacked. ex: ./pythem.py -i wlan0 --bruter --service ssh -t 10.0.0.1 -f /usr/share/wordlist.txt -u username")
+	bruter.add_argument("-u","--username",dest='username',help ="Username to be used in the brute-force attack.")
 
 	mitm = parser.add_argument_group('[Man-In-The-Middle]')
-	mitm.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
-	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
+	mitm.add_argument("--spoof", action='store_true', help="Redirects traffic using ARP spoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
+	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' ARP spoof mode: reply(rep) or requests (req) [default: rep].')
 	
 	remote = parser.add_argument_group('[Remote]')
-	remote.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -l -p 7001")
-	remote.add_argument("-l","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
-	remote.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
+	remote.add_argument("--ssh", action='store_true', help="Waits for a SSH/TCP reverse connection from target. ex: ./pythem.py --ssh -l -p 7001")
+	remote.add_argument("-l","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Server IP address to listen, default[0.0.0.0']")
+	remote.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Server port to listen, default=[7000]")
 
 	sniff = parser.add_argument_group('[Sniffing]')
-	sniff.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes. ex: './pythem.py -i wlan0 --sniff --filter manual")
-	sniff.add_argument("--filter",type=str, dest='filter', default='all', choices=['all','dns','http','manual'], help=" Modo de sniffing: all, dns, http ou manual [padrão=all]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
-	sniff.add_argument("--pforensic",action="store_true", help=" Lê arquivo .pcap e entra em shell interativo para analise dos respectivos pacotes. ex: './pythem.py -i wlan0 --rdpcap -f /path/file.pcap'.")
+	sniff.add_argument("--sniff", action="store_true", help="Enable packets sniffing. ex: './pythem.py -i wlan0 --sniff --filter manual")
+	sniff.add_argument("--filter",type=str, dest='filter', default='all', choices=['all','dns','http','manual'], help=" Sniffing filter: all, dns, http or manual [default=all]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	sniff.add_argument("--pforensic",action="store_true", help=" Read .pcap file and start interactive shell for analyze the packets. ex: './pythem.py -i wlan0 --rdpcap -f /path/file.pcap'.")
 
 	scan = parser.add_argument_group('[Scanning]')
-	scan.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
-	scan.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Modo de scan: manual,tcp e arp padrão=[tcp].")
+	scan.add_argument("--scan", action='store_true', help="Do a TCP scan in a Address/Range IP to discover hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
+	scan.add_argument("--mode",type=str, dest='mode', default='tcp',choices = ["tcp","arp","manual"], help="Scan mode: manual,tcp or arp default=[tcp].")
 
 	utils = parser.add_argument_group('[Utils]')
-	utils.add_argument("--decode", type=str,dest='decode', help="Decodifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --decode base64")  
-	utils.add_argument("--encode", type=str, dest='encode', help="Codifica um texto com o padrão determinado. ex: ./pythem.py -i wlan0 --encode hex")
-	utils.add_argument("--geoip",action='store_true',help="Determina aproximadamente a geolocalização do endereço IP. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
+	utils.add_argument("--decode", type=str,dest='decode', help="Decodes a string with choosen pattern. ex: ./pythem.py -i wlan0 --decode base64")  
+	utils.add_argument("--encode", type=str, dest='encode', help="Encodes a string with choosen pattern. ex: ./pythem.py -i wlan0 --encode hex")
+	utils.add_argument("--geoip",action='store_true',help="Geolocalizate approximately the location of the IP address. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
 
 	web = parser.add_argument_group('[Web]')
-	web.add_argument("--urlbuster", action='store_true', help="Inicializa teste de parametros em uma URL através de uma wordlist. ex: ./pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/deUMaCEM.txt")
+	web.add_argument("--urlbuster", action='store_true', help="Initialize a URL bruteforce attack, requires a wordlist. ex: './pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/wordlist.txt'")
+	web.add_argument("--formbruter", action='store_true', help="Initialize a web page formulary brute-force attack, requires a wordlist. ex: './pythem.py -i wlan0 --formbruter -t http://testphp.vulnweb/login.php -f /path/wordlist.txt'")
 
 	wireless = parser.add_argument_group('[Wireless]')
-	wireless.add_argument("--startmon", action='store_true' ,help='Inicializa modo monitor na interface desejada. ex. "./pythem.py -i wlan0 --startmon"')		
-	wireless.add_argument("--stopmon",action='store_true', help='Finaliza o modo monitor na interface préviamente especificado. ex: "./pythem.py -i wlan0mon --stopmon"')
-	wireless.add_argument("--ssid",action='store_true',help="Utiliza a interface em modo monitor para descobrir o SSID de APs por perto.")
+	wireless.add_argument("--startmon", action='store_true' ,help='Initialize monitor mode on desired interface. ex. "./pythem.py -i wlan0 --startmon"')		
+	wireless.add_argument("--stopmon",action='store_true', help='Terminate monitor mod on desired interface. ex: "./pythem.py -i wlan0mon --stopmon"')
+	wireless.add_argument("--ssid",action='store_true',help="Discover SSIDs and APs near with the monitor interface.")
 	
 
 	if len(sys.argv) < 2:
@@ -125,7 +128,7 @@ if __name__ == '__main__':
 			scan.start()
 		
 		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
 				
 
@@ -142,21 +145,21 @@ if __name__ == '__main__':
 
 		except KeyboardInterrupt:
 			spoof.stop()
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
 	
 	elif args.spoof:
 		try:
                         myip = get_myip(interface)
                         mymac = get_mymac(interface)
-			print "[*] Utilize --sniff para sniffar pacotes interceptados, poisoning em threading."
+			print "[*] Use --sniff to sniff intercepted packets, poisoning in threading."
 			from modules.arpoisoner import ARPspoof
 			spoof = ARPspoof(gateway,targets,interface,arpmode, myip, mymac)
 			spoof.start()
 			
 		except KeyboardInterrupt:
 			spoof.stop()
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
 	
 	elif args.sniff:
@@ -166,7 +169,7 @@ if __name__ == '__main__':
 			sniff.start()
 		
 		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
 	
 	elif args.pforensic:
@@ -175,10 +178,10 @@ if __name__ == '__main__':
 			pcapread = PcapReader(file)
 			pcapread.start()
 		except KeyboardInterrupt:	
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
                 except TypeError:
-                        print "[!] Selecione um arquivo com -f /path/arquivo.pcap"
+                        print "[!] Select a file with -f /path/file.pcap"
                         sys.exit(0)
 
 
@@ -190,42 +193,61 @@ if __name__ == '__main__':
 			server.start()
 		except KeyboardInterrupt:
 			server.stop()
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
 		except TypeError:
-			print "[!] Faltam o/os argumento/os -l e/ou -p."
+			print "[!] Missing the arguments -l and/or -p."
 			sys.exit(0)
 	
 	elif args.urlbuster:
 		try:
+			url = 'url'
 			if targets is None:
-				print "[!] Selecione uma URL alvo válida com -t (lembre-se do http:// e respectivas / (barras)"
+				print "[!] Select a valid URL as target with -t (remeber of http:// and / (slash)"
 				sys.exit(0)
 			else:
-				from modules.url_bruter import URLbrutus
-				buster = URLbrutus(targets, file)
-				buster.start()
+				from modules.web_bruter import WEBbrutus
+				brutus = WEBbrutus(targets, file)
+				brutus.start(url)
 		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
                 except TypeError:
-                        print "[!] Selecione um arquivo com -f /path/arquivo.txt"
+                        print "[!] Select a file with -f /path/wordlist.txt"
                         sys.exit(0)
+	elif args.formbruter:
+		try:
+			form = 'form'
+			if targets is None:
+				print "[!] Select a valid URL target with -t ."
+				sys.exit(0)
+			else:
+				from modules.web_bruter import WEBbrutus
+				brutus = WEBbrutus(targets, file)
+				brutus.start(form)
+		except KeyboardInterrupt:
+			print "[*] User requested shutdown."
+			sys.exit(1)
+		except TypeError:
+			print "[!] Select a file with -f /path/wordlist.txt"
+			sys.exit(0)
+
+
 
 	elif args.bruter:
 
 		try:
 			if targets is None:
-				print "[!] Selecione um endereço IP alvo válido com -t"
+				print "[!] Select a valid IP address as target with -t"
 			else:
 				from modules.ssh_bruter import SSHbrutus
 				brutus = SSHbrutus(targets, username, file)
 				brutus.start()
 		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
                 except TypeError:
-                        print "[!] Selecione um arquivo com -f /path/arquivo.txt"
+                        print "[!] Select a file with -f /path/arquivo.txt"
                         sys.exit(0)
 
 	elif args.ssid:
@@ -234,14 +256,14 @@ if __name__ == '__main__':
 			ssid = SSIDmon(interface)
 			ssid.start()
 		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)
 
 
 	elif args.geoip:
 		try:
 			if targets is None:
-				print "[!] Selecione um endereço IP alvo válido com -t"
+				print "[!] Select a valid IP address as target with -t"
 				sys.exit(0)
 			else:
 				from modules.geoip import Geoip
@@ -249,18 +271,18 @@ if __name__ == '__main__':
 				iptracker = Geoip(targets,path)
 		
 		except KeyboardInterrupt:
-			print "[*] Finalizado pelo usuário."
+			print "[*] User requested shutdown."
 			sys.exit(1)	
 
         elif args.decode:
                 try:print decode(based)
                 except KeyboardInterrupt:
-                        print "\n[*] Finalizado pelo usuário."
+                        print "\n[*] User requested shutdown."
                         sys.exit(0)
         elif args.encode:
                 try:print encode(basee)
                 except KeyboardInterrupt:
-                        print "\n[*] Finalizado pelo usuário."
+                        print "\n[*] User requested shutdown."
                         sys.exit(0)
 
 
@@ -276,12 +298,12 @@ if __name__ == '__main__':
 			os.system("airmon-ng stop %s" % interface)
 			os.system("service network-manager restart")
 		except Exception as e:
-			print "[*] Exceção encontrada: {}".format(e)
+			print "[*] Exception caught: {}".format(e)
 			sys.exit(0)
 
 
 	else:
-		print "Selecione uma opção válida."
+		print "Select a valid option , --help check your sintax."
 		sys.exit(1)
 
 	

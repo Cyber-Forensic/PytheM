@@ -3,20 +3,21 @@
 
 # Copyright (c) 2016 m4n3dw0lf
 #
-# Este arquivo é parte do programa PytheM
-
-# PytheM é um software livre; você pode redistribuí-lo e/ou 
-# modificá-lo dentro dos termos da Licença Pública Geral GNU como 
-# publicada pela Fundação do Software Livre (FSF); na versão 3 da 
-# Licença, ou (na sua opinião) qualquer versão.
-
-# Este programa é distribuído na esperança de que possa ser  útil, 
-# mas SEM NENHUMA GARANTIA; sem uma garantia implícita de ADEQUAÇÃO
-# a qualquer MERCADO ou APLICAÇÃO EM PARTICULAR. Veja a
-# Licença Pública Geral GNU para maiores detalhes.
-
-# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto
-# com este programa, Se não, veja <http://www.gnu.org/licenses/>.
+# This file is part of the program PytheM
+#
+# PytheM is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
 
 from scapy.all import *
 from netaddr import IPNetwork, IPRange, IPAddress, AddrFormatError
@@ -32,10 +33,10 @@ class ARPspoof(object):
 		try:
 			self.gateway = str(IPAddress(gateway))
 		except AddrFormatError as e:
-			sys.exit("[-] Especifique um endereço IP válido como gateway")
+			sys.exit("[-] Select a valid IP address as gateway")
 
 		self.gateway_mac = getmacbyip(gateway)
-		if not self.gateway_mac: sys.exit("[-] Erro: não foi possível resolver o endereço MAC do gateway.")
+		if not self.gateway_mac: sys.exit("[-] Error: Couldn't retrieve MAC address from gateway.")
 
 		
 		self.targets	= self.get_range(targets)
@@ -104,7 +105,7 @@ class ARPspoof(object):
 			return target_list
 
 		except AddrFormatError:
-			sys.exit("[!] Especifique um Endereço/Range IP válido como alvo.")
+			sys.exit("[!] Select a valid IP  address/range as target")
 
 	def start_arp_mon(self):
 		sniff(prn=self.arp_mon_callback, filter="arp", store=0)
@@ -139,7 +140,7 @@ class ARPspoof(object):
 						self.socket.send(packet)
 				except Exception as e:
 					if "Interrupted system call" not in e:
-						print "[ARPmon] Exceção ocorreu enquanto re-envenenava pacote: {}".format(e)
+						print "[ARPmon] Excption caught while re-poisoning packet: {}".format(e)
 
 
 	def resolve_target_mac(self, targetip):
@@ -156,7 +157,7 @@ class ARPspoof(object):
 			except Exception as e:
 				resp = ''
 				if "Interrupted system call" not in e:
-					print "[!] Exceção ocorreu enquanto envenenava {}: {}".format(targetip, e)
+					print "[!] Exception caught while poisoning {}: {}".format(targetip, e)
 			if len(resp) > 0:
 				targetmac = resp[0][1].hwsrc
 				self.arp_cache[targetip] = targetmac
@@ -190,7 +191,7 @@ class ARPspoof(object):
 						
 							except Exception as e:
 								if "Interrupted system call" not in e:
-									print "[!] Exceção ocorreu enquanto envenenava {}: {}".format(targetip, e)
+									print "[!] Exception caught while poisoning {}: {}".format(targetip, e)
 			sleep(self.interval)		
 
 
@@ -202,7 +203,7 @@ class ARPspoof(object):
 		count = 2
 
 		if self.targets is None:
-			print "[*] Restaurando conexão de sub-rede com {} pacotes".format(count)
+			print "[*] Restoring sub-net connection with {} packets".format(count)
 			pkt = Ether(src=self.gateway_mac, dst="ff:ff:ff:ff:ff:ff")/ARP(hwsrc=self.gateway_mac, psrc=self.gateway, op="is-at")
 			for i in range(0, count):
 				self.socket2.send(pkt)
@@ -213,7 +214,7 @@ class ARPspoof(object):
 				target_mac = self.resolve_target_mac(target_ip)
 
 				if targetmac is not None:
-					print "[+] Restaurando conexão {} <--> {} com {} pacotes por host".format(target_ip, self.gateway, count)
+					print "[+] Restoring connection {} <--> {} with {} packets for host".format(target_ip, self.gateway, count)
 
 					try:
 						for i in range(0,count):
@@ -221,7 +222,7 @@ class ARPspoof(object):
 							self.socket2.send(Ether(src=self.gateway_mac, dst='ff:ff:ff:ff:ff:ff')/ARP(op="is-at", pdst=targetip, psrc=self.gateway, hwdst="ff:ff:ff:ff:ff:ff", hwsrc=self.gateway_mac))
 					except Exception as e:
 						if "Interrupted system call" not in e:
-							print "[!] Exceção ocorreu enquanto envenava {}: {}".format(targetip, e)
+							print "[!] Exception caught while poisoning {}: {}".format(targetip, e)
 
 		
 		set_ip_forwarding(0)
