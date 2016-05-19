@@ -1,4 +1,5 @@
 ecdsa==0.13
+mechanize==0.2.5
 netaddr==0.7.18
 paramiko==1.16.0
 pycrypto==2.6.1
