@@ -1,8 +1,8 @@
 # PytheM
 
-Ferramenta de pentesting/network em pt-br desenvolvida em Python. A mesma está sendo desenvolvida com o intuito de que possa ser util a alguém e não me responsabilizo por nenhum uso indevido da mesma. Só funciona em sistemas operacionais GNU/Linux.
+Python network/pentesting tool. Same has been developed in the hope that it will be useful and i don't take responsabillity of any misapplication of it. Only for GNU/Linux OS systems
 
-#Instalação
+#Installation
 
 $sudo git clone https://github.com/m4n3dw0lf/PytheM/ <br />
 $sudo pip install -r requirements.txt <br />
@@ -20,3 +20,4 @@ $sudo ./pythem <br/>
   
 
 By: m4n3dw0lf
+
