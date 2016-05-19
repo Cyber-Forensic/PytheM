@@ -1,5 +1,23 @@
 # PytheM
-Simple and for educational purpose only pt-br mitm/pentesting tool.
 
-there is a lot of mitm tools 100x better than that, i am just training my python programming skills
-with this tool, anyway everyone is welcome to help and/or contribute :)
+Python network/pentesting tool. Same has been developed in the hope that it will be useful and i don't take responsabillity of any misapplication of it. Only for GNU/Linux OS systems
+
+#Installation
+
+$sudo git clone https://github.com/m4n3dw0lf/PytheM/ <br />
+$sudo pip install -r requirements.txt <br />
+$sudo ./pythem <br/>
+
+#Features
+
+- [Brute-Force]
+- [Man-In-The-Middle]:
+- [Remote]:
+- [Sniffing]:
+- [Scanning]:
+- [Web]:
+- [Wireless]:
+  
+
+By: m4n3dw0lf
+
