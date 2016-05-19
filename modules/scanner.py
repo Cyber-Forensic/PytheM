@@ -31,7 +31,9 @@ class Scanner(object):
 		self.targets = target
 		self.arprange = target
 		self.range = self.get_range(target)
-		self.portRange = [21,22,23,80,443,3000,3128,3128,3389,8080]
+		self.portRange = []
+		for i in range(0,65535):
+			self.portRange.append(i)
 		self.mode = mode
 		self.portManual = []
 	
@@ -85,8 +87,6 @@ class Scanner(object):
 					if(resp.getlayer(TCP).flags == 0x12):
 						send_rst = sr(IP(dst=self.targetip)/TCP(sport=srcPort, dport=dstPort, flags="R"), timeout=1,verbose=0)
 						print "[+]{}:{} está aberta.".format(self.targetip,str(dstPort))
-					elif(resp.getlayer(TCP).flags == 0x14):
-						print "[-]{}:{} está fechada.".format(self.targetip,str(dstPort)) 
 			elif(resp.haslayer(ICMP)):
 				if(int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
 					print "[-]{}:{} está filtrada.".format(self.targetip,str(dstPort))

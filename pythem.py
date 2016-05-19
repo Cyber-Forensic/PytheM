@@ -30,8 +30,8 @@ import argparse
 
 print get_banner()
 
-pythem_version = '0.1.8'
-pythem_codename = 'Krait'
+pythem_version = '0.1.9'
+pythem_codename = 'Cascavel'
 
 if os.geteuid() !=0:
 	sys.exit("[-] Apenas para roots kido!")
@@ -57,13 +57,16 @@ if __name__ == '__main__':
 	mitm = parser.add_argument_group('[Man-In-The-Middle]')
 	mitm.add_argument("--spoof", action='store_true', help="Redireciona tráfego usando ARPspoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
 	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' modo de ARPspoof: respostas(rep) ou requisições (req) [padrão: rep].')
-	mitm.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes. ex: './pythem.py -i wlan0 --sniff --filter manual")
-	mitm.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" modo de sniffing: dns,http ou manual [padrão=dns]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
 	
 	remote = parser.add_argument_group('[Remote]')
 	remote.add_argument("--ssh", action='store_true', help="Espera por uma conexão tcp reversa em SSH do alvo. ex: ./pythem.py --ssh -l -p 7001")
 	remote.add_argument("-l","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Endereço IP do servidor a escutar, padrão[0.0.0.0']")
-	parser.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
+	remote.add_argument("-p","--port",dest='port',nargs='?', const=7000, help="Porta do servidor a escutar, padrão=[7000]")
+
+	sniff = parser.add_argument_group('[Sniffing]')
+	sniff.add_argument("--sniff", action="store_true", help="Habilita o sniffing de pacotes. ex: './pythem.py -i wlan0 --sniff --filter manual")
+	sniff.add_argument("--filter",type=str, dest='filter', default='all', choices=['all','dns','http','manual'], help=" Modo de sniffing: all, dns, http ou manual [padrão=all]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	sniff.add_argument("--pforensic",action="store_true", help=" Lê arquivo .pcap e entra em shell interativo para analise dos respectivos pacotes. ex: './pythem.py -i wlan0 --rdpcap -f /path/file.pcap'.")
 
 	scan = parser.add_argument_group('[Scanning]')
 	scan.add_argument("--scan", action='store_true', help="Faz scan em uma Range IP para descobrir hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
@@ -96,15 +99,14 @@ if __name__ == '__main__':
 	startmon = args.startmon
 	stopmon = args.stopmon
 
-
 	mode = args.mode
 
 	arpmode = args.arpmode
+
 	filter = args.filter
 	
 	server = args.server
 	port = args.port
-
 
 	service = args.service
 	file = args.file
@@ -166,7 +168,20 @@ if __name__ == '__main__':
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
-		
+	
+	elif args.pforensic:
+		try:
+			from modules.pforensic import PcapReader
+			pcapread = PcapReader(file)
+			pcapread.start()
+		except KeyboardInterrupt:	
+			print "[*] Finalizado pelo usuário."
+			sys.exit(1)
+                except TypeError:
+                        print "[!] Selecione um arquivo com -f /path/arquivo.pcap"
+                        sys.exit(0)
+
+
 
 	elif args.ssh:
 		try:
@@ -177,25 +192,41 @@ if __name__ == '__main__':
 			server.stop()
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
-
+		except TypeError:
+			print "[!] Faltam o/os argumento/os -l e/ou -p."
+			sys.exit(0)
+	
 	elif args.urlbuster:
 		try:
-			from modules.url_bruter import URLbrutus
-			buster = URLbrutus(targets, file)
-			buster.start()
+			if targets is None:
+				print "[!] Selecione uma URL alvo válida com -t (lembre-se do http:// e respectivas / (barras)"
+				sys.exit(0)
+			else:
+				from modules.url_bruter import URLbrutus
+				buster = URLbrutus(targets, file)
+				buster.start()
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
+                except TypeError:
+                        print "[!] Selecione um arquivo com -f /path/arquivo.txt"
+                        sys.exit(0)
 
 	elif args.bruter:
 
 		try:
-			from modules.ssh_bruter import SSHbrutus
-			brutus = SSHbrutus(targets, username, file)
-			brutus.start()
+			if targets is None:
+				print "[!] Selecione um endereço IP alvo válido com -t"
+			else:
+				from modules.ssh_bruter import SSHbrutus
+				brutus = SSHbrutus(targets, username, file)
+				brutus.start()
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
 			sys.exit(1)
+                except TypeError:
+                        print "[!] Selecione um arquivo com -f /path/arquivo.txt"
+                        sys.exit(0)
 
 	elif args.ssid:
 		try:
@@ -209,9 +240,13 @@ if __name__ == '__main__':
 
 	elif args.geoip:
 		try:
-			from modules.geoip import Geoip
-			path = "config/GeoLiteCity.dat"
-			iptracker = Geoip(targets,path)
+			if targets is None:
+				print "[!] Selecione um endereço IP alvo válido com -t"
+				sys.exit(0)
+			else:
+				from modules.geoip import Geoip
+				path = "config/GeoLiteCity.dat"
+				iptracker = Geoip(targets,path)
 		
 		except KeyboardInterrupt:
 			print "[*] Finalizado pelo usuário."
@@ -242,7 +277,7 @@ if __name__ == '__main__':
 			os.system("service network-manager restart")
 		except Exception as e:
 			print "[*] Exceção encontrada: {}".format(e)
-
+			sys.exit(0)
 
 
 	else:

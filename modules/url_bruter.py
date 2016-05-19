@@ -22,11 +22,8 @@ import urllib2
 import threading
 import Queue
 import urllib
-<<<<<<< HEAD
-=======
 import sys
 import os
->>>>>>> 60cdcd6683d1bd5e35e7e590b919b081cfa0fa58
 
 
 class URLbrutus(object):
@@ -95,12 +92,10 @@ class URLbrutus(object):
 
 	
 	def start(self):
-<<<<<<< HEAD
 		print "[+] Content URLbuster inicializado."
 		for i in range(self.threads):
 			t = threading.Thread(target=self.dir_bruter,args=(self.word_queue,self.extensions,))
 			t.start()
-=======
 		try:
 			print "[+] Content URLbuster inicializado."
 			for i in range(self.threads):
@@ -110,4 +105,3 @@ class URLbrutus(object):
 			print "[*] Finalizado pelo usuário."
 			os.system('kill %d' % os.getpid())
 			sys.exit(0)
->>>>>>> 60cdcd6683d1bd5e35e7e590b919b081cfa0fa58
