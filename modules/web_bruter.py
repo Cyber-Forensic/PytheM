@@ -78,8 +78,8 @@ class WEBbrutus(object):
 	def form_bruter(self):
 		print
 		try:
-			self.login = raw_input("[+] Enter the id name of the username box: ")
-			self.psswd = raw_input("[+] Enter the id name of the password box: ")
+			self.login = raw_input("[+] Enter the input name of the username box: ")
+			self.psswd = raw_input("[+] Enter the input name of the password box: ")
 			self.user = raw_input("[+] Enter the username to brute-force the formulary: ")
 			input_file = open(self.wordlist)
 			for i in input_file.readlines():

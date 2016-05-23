@@ -67,49 +67,52 @@ packetload [num]:	Display the payload of index selected packet.
 				self.argv = self.command.split()
 				self.input_list = [str(a) for a in self.argv]
 
-                                if self.input_list[0]  == 'packetdisplay':
-                                        try:self.packets[int(self.input_list[1])].show()
-					except Exception as e: print "[!] Exception caught: {}".format(e)
+
+				try:
+                                	if self.input_list[0]  == 'packetdisplay':
+                                	        try:self.packets[int(self.input_list[1])].show()
+						except Exception as e: print "[!] Exception caught: {}".format(e)
 		
-				elif self.input_list[0] == 'filter':
-					try:
-						self.filt = raw_input("[+] Input the filter: ")
-						sniff(offline="{}".format(self.file),filter = "{}".format(self.filt),prn=self.All)
-					except Exception as e: print "[!] Exception caught: {}".format(e)
+					elif self.input_list[0] == 'filter':
+						try:
+							self.filt = raw_input("[+] Input the filter: ")
+							sniff(offline="{}".format(self.file),filter = "{}".format(self.filt),prn=self.All)
+						except Exception as e: print "[!] Exception caught: {}".format(e)
 
-				elif self.input_list[0] == 'packetload':
-					try:
-						print "[+] Packet {} payload: ".format(self.input_list[1])
-						self.filter_lookup(self.packets[int(self.input_list[1])])
-					
-					except Exception as e: print "[!] Exception caught: {}".format(e)
+					elif self.input_list[0] == 'packetload':
+						try:
+							print "[+] Packet {} payload: ".format(self.input_list[1])
+							self.filter_lookup(self.packets[int(self.input_list[1])])
+						
+						except Exception as e: print "[!] Exception caught: {}".format(e)
+	
+					elif self.input_list[0]  == 'exit':
+						sys.exit(0)
+					elif self.input_list[0] == 'quit':
+						sys.exit(0)
+					elif self.input_list[0] == 'help':
+						self.printHelp()
+					elif self.input_list[0] == 'clear':
+						os.system('clear')
+					elif self.input_list[0] == 'ls':
+						os.system('ls')
+					elif self.input_list[0] == 'summary':
+						try:self.packets.summary()
+						except Exception as e: print "[!] Exception caught: {}".format(e)
+					elif self.input_list[0] == 'show':
+						try:self.packets.show()
+						except Exception as e: print "[!] Exception caught: {}".format(e)	
+					elif self.input_list[0] == 'conversations':
+						try:self.packets.conversations()
+						except Exception as e: print "[!] Exception caught: {}".format(e)
+					else:
+						print "[-] Select a valid option."				
 
-
-				elif self.input_list[0]  == 'exit':
-					sys.exit(0)
-				elif self.input_list[0] == 'quit':
-					sys.exit(0)
-				elif self.input_list[0] == 'help':
-					self.printHelp()
-				elif self.input_list[0] == 'clear':
-					os.system('clear')
-				elif self.input_list[0] == 'ls':
-					os.system('ls')
-				elif self.input_list[0] == 'summary':
-					try:self.packets.summary()
-					except Exception as e: print "[!] Exception caught: {}".format(e)
-				elif self.input_list[0] == 'show':
-					try:self.packets.show()
-					except Exception as e: print "[!] Exception caught: {}".format(e)	
-				elif self.input_list[0] == 'conversations':
-					try:self.packets.conversations()
-					except Exception as e: print "[!] Exception caught: {}".format(e)
-				else:
-					print "[-] Select a valid option."				
-
-                        except KeyboardInterrupt:
-                                print "[*] User requested shutdown."
-                                sys.exit(0)
+                        	except IndexError:
+					pass
+			except KeyboardInterrupt:
+                               	 print "[*] User requested shutdown."
+                               	 sys.exit(0)
 
 
 

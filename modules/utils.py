@@ -72,17 +72,3 @@ def module_check(module):
 		print "[-] Terminated"
 		sys.exit(1)
 
-def startmon(mon_iface):
-	iface = str(mon_iface)
-	try:
-		os.system("airmon-ng check kill")
-		os.system("airmon-ng start %s" % iface)
-	except:
-		module_check('aircrack-ng')
-def stopmon(mon_iface):
-	iface = str(mon_iface)
-	try:
-		os.system("airmon-ng stop %s" % iface)
-		os.system("service network-manager restart")
-	except Exception as e:
-		print "[*] Exception caught: {}".format(e)

@@ -32,47 +32,45 @@ class Scanner(object):
 		self.targets = target
 		self.arprange = target
 		self.range = self.get_range(target)
-		self.portRange = []
-		for i in range(0,65535):
-			self.portRange.append(i)
+		self.portRange = [21,22,23,25,53,57,80,107,109,110,115,118,123,135,137,138,139,161,389,443,445,465,995,1025,1026,1027,1035,1234,1243,3000,3128,3306,3389,3872,4444,6346,6667,6667,8080,12345,12346,16660,18753,20034,20432,20433,27374,27444,27665,31335,31337,33270,33567,33568,40421,60008,65000]		
 		self.mode = mode
 		self.portManual = []
 	
 	def get_range(self, targets):
                 if targets is None:
                         return None
-
-                try:
-                        target_list = []
-                        for target in targets.split(','):
-
-
-                                if '/' in target:
-                                        target_list.extend(list(IPNetwork(target)))
-
-                                elif '-' in target:
-                                        start_addr = IPAddress(target.split('-')[0])
-                                        try:
-                                                end_addr = IPAddress(target.split('-')[1])
-                                                ip_range = IPRange(start_addr, end_addr)
-
-                                        except AddrFormatError:
-                                                end_addr = list(start_addr.words)
-                                                end_addr[-1] = target.split('-')[1]
-                                                end_addr = IPAddress('.'.join(map(str, end_addr)))
-                                                ip_range = IPRange(start_addr, end_addr)
+		if targets is not None:
+			try:
+                 	      	target_list = []
+              	       		for target in targets.split(','):
 
 
+                                	if '/' in target:
+                                        	target_list.extend(list(IPNetwork(target)))
 
-                                        target_list.extend(list(ip_range))
+                         	        elif '-' in target:
+                               	         	start_addr = IPAddress(target.split('-')[0])
+                               	         	try:
+                               	                	end_addr = IPAddress(target.split('-')[1])
+                                                	ip_range = IPRange(start_addr, end_addr)
 
-                                else:
-                                        target_list.append(IPAddress(target))
+                                       		except AddrFormatError:
+                                                	end_addr = list(start_addr.words)
+                                                	end_addr[-1] = target.split('-')[1]
+                                                	end_addr = IPAddress('.'.join(map(str, end_addr)))
+                                                	ip_range = IPRange(start_addr, end_addr)
 
-                        return target_list
 
-                except AddrFormatError:
-                        sys.exit("[!]Select a valid IP address/range as target with -t.")
+
+                                        	target_list.extend(list(ip_range))
+
+                                	else:
+                                        	target_list.append(IPAddress(target))
+
+                        	return target_list
+
+			except Exception as e:
+     				sys.exit("[!] Exception caught: {}").format(e)
 
 
 
@@ -109,7 +107,7 @@ class Scanner(object):
                                 print "\n[*]" + str(self.targetip) + " is online: "
                                 self.portScan(str(self.targetip),self.portManual)
                                 liveCounter += 1
-          	print "De "+ str(len(self.range)) + " scannead hosts, " + str(liveCounter) + " are online."
+          	print "Of "+ str(len(self.range)) + " scanned hosts, " + str(liveCounter) + " are online."
 
 		
 
@@ -125,12 +123,12 @@ class Scanner(object):
                         if (str(type(resp)) == "<type 'NoneType'>"):
                                  print "\n[*]" + str(self.targetip) + " is down or not responding.\n"
                         elif (int(resp.getlayer(ICMP).type)==3 and int(resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
-                                 print "\n[*]" + str(self.targetip) + " está bloqueando ICMP.\n"
+                                 print "\n[*]" + str(self.targetip) + " is blocking ICMP.\n"
 			else:
-                                 print "\n[*]" + str(self.targetip) + " está online: "
+                                 print "\n[*]" + str(self.targetip) + " is online: "
 	      			 self.portScan(str(self.targetip),self.portRange)
                                  liveCounter += 1
-		print "De "+ str(len(self.range)) + " scannead hosts, " + str(liveCounter) + " are online."
+		print "Of "+ str(len(self.range)) + " scanned hosts, " + str(liveCounter) + " are online."
 
 
 	
@@ -175,5 +173,7 @@ class Scanner(object):
 				print "[*] User requested shutdown."
 				os.system('kill %d' % os.getpid())
 				sys.exit(1)
+
+
 		else:
 			print "[!] Invalid scan mode ./pythem.py --help to check your sintax."

