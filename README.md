@@ -1,6 +1,6 @@
 # PytheM
 
-Python network/pentesting tool. Same has been developed in the hope that it will be useful and i don't take responsabillity of any misapplication of it. Only for GNU/Linux OS systems
+PytheM is a python network/pentesting tool. Same has been developed in the hope that it will be useful and i don't take responsabillity of any misapplication of it. Only for GNU/Linux OS 
 
 #Installation
 
