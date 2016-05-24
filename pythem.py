@@ -68,7 +68,7 @@ if __name__ == '__main__':
 	sniff = parser.add_argument_group('[Sniffing]')
 	sniff.add_argument("--sniff", action="store_true", help="Enable packets sniffing. ex: './pythem.py -i wlan0 --sniff --filter manual")
 	sniff.add_argument("--filter",type=str, dest='filter', default='all', choices=['all','dns','http','manual'], help=" Sniffing filter: all, dns, http or manual [default=all]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
-	sniff.add_argument("--pforensic",action="store_true", help=" Read .pcap file and start interactive shell for analyze the packets. ex: './pythem.py -i wlan0 --rdpcap -f /path/file.pcap'.")
+	sniff.add_argument("--pforensic",action="store_true", help=" Read .pcap file and start interactive shell for analyze the packets. ex: './pythem.py -i wlan0 --pforensic -f /path/file.pcap'.")
 
 	scan = parser.add_argument_group('[Scanning]')
 	scan.add_argument("--scan", action='store_true', help="Do a TCP scan in a Address/Range IP to discover hosts. ex: './pythem.py -i wlan0 --scan -t 192.168.0.0/24 --mode arp'.")
@@ -80,8 +80,10 @@ if __name__ == '__main__':
 	utils.add_argument("--geoip",action='store_true',help="Geolocalizate approximately the location of the IP address. ex:./pythem.py -i wlan0 --geoip --target 216.58.222.46")
 
 	web = parser.add_argument_group('[Web]')
-	web.add_argument("--urlbuster", action='store_true', help="Initialize a URL bruteforce attack, requires a wordlist. ex: './pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/wordlist.txt'")
+	web.add_argument("--urlbuster", action='store_true', help="Initialize a URL brute-force attack, requires a wordlist. ex: './pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/wordlist.txt'")
 	web.add_argument("--formbruter", action='store_true', help="Initialize a web page formulary brute-force attack, requires a wordlist. ex: './pythem.py -i wlan0 --formbruter -t http://testphp.vulnweb/login.php -f /path/wordlist.txt'")
+	web.add_argument("--cookiedump", action='store_true', help="Dump a cookie value from URL(Normal request or with Authentication required). ex: './pythem.py -i wlan0 --cookiedump -t http://testphp.vulnweb.com'.")
+	web.add_argument("--cookiedecode", action='store_true', help="Decode a cookie value.")
 
 	wireless = parser.add_argument_group('[Wireless]')
 	wireless.add_argument("--startmon", action='store_true' ,help='Initialize monitor mode on desired interface. ex. "./pythem.py -i wlan0 --startmon"')		
@@ -89,7 +91,7 @@ if __name__ == '__main__':
 	wireless.add_argument("--dumpmon",action='store_true',help="Discover Access points SSID's that are near with the monitor interface. ex: './pythem.py -i wlan0mon --dumpmon'")
 	wireless.add_argument("-c","--channel", type=str, dest='channel', help = "Channel to wpahandshake.")
 	wireless.add_argument("--wpahandshake", action='store_true' , help="Initialize a aircrack-ng suit attack to retrieve WPA handshake and write to .pcap file. ex:' ./pythem.py -i wlan0mon --wpahandshake -c 2 -t 8C:10:D4:D8:0B:96 -f handshake' .")
-	wireless.add_argument("--wpabruteforce", action='store_true', help="Initialize aircrack-ng bruteforce attack into .pcap file. ex: './pythem.py -i wlan0 --wpabruteforce -f wordlist.txt -t handshake.pcap' .")	
+	wireless.add_argument("--wpabruteforce", action='store_true', help="Initialize aircrack-ng brute-force attack into .pcap file. ex: './pythem.py -i wlan0 --wpabruteforce -f wordlist.txt -t handshake.pcap' .")	
 	
 	if len(sys.argv) < 2:
     		parser.print_help()
@@ -255,6 +257,19 @@ if __name__ == '__main__':
                         print "[!] Select a file with -f /path/arquivo.txt"
                         sys.exit(0)
 
+	elif args.cookiedump:
+		try:
+			if targets is None:
+				print "[!] Select a valid URL as target with -t "
+				sys.exit(0)
+			else:
+				from modules.cookiethief import CookieThief
+				cookiedump = CookieThief(targets)
+				cookiedump.start()
+		except KeyboardInterrupt:
+			print "[*] User requested shutdown."
+			sys.exit(0)
+			
 
 	elif args.geoip:
 		try:
@@ -281,6 +296,11 @@ if __name__ == '__main__':
                         print "\n[*] User requested shutdown."
                         sys.exit(0)
 
+	elif args.cookiedecode:
+		try:cookiedecode()
+		except KeyboardInterrupt:
+			print "\n[*] User requested shutdown."
+			sys.exit(0)
 
 	elif args.startmon:
 		try:
