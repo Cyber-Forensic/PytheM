@@ -43,23 +43,23 @@ exit/quit:		Terminate the program
 
 show:			Display all the packets and their index numbers.
 conversations:		Display pictogram with conversations between hosts from the analyzed file.
-filter:			Opens dialogue to filter expressions on .pcap file, filter in the tcpdump expression filter format.
 
 packetdisplay [num]:	Display the full content of index selected packet.
 packetload [num]:	Display the payload of index selected packet.
 """.format(self.file)	
 
-	def All(self,p):
-		print p
-		print
 
 	def filter_lookup(self,p):
 		if IP in p:
 			ip_src = p[IP].src
 			ip_dst = p[IP].dst
 			if p.haslayer(Raw):
-				print str(ip_src) + "-->" + str(ip_dst) + "\n" + p.getlayer(Raw).load 		
-
+				print
+				print "----------------------------------------------[PACKET]-------------------------------------------------------\n"
+				print str(ip_src) + "---->" + str(ip_dst) + "\n" 
+				print "\n".join(p.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n")) 		
+				print "-------------------------------------------------------------------------------------------------------------"
+				print
 	def start(self):
 		while True:
 			try:
@@ -73,11 +73,6 @@ packetload [num]:	Display the payload of index selected packet.
                                 	        try:self.packets[int(self.input_list[1])].show()
 						except Exception as e: print "[!] Exception caught: {}".format(e)
 		
-					elif self.input_list[0] == 'filter':
-						try:
-							self.filt = raw_input("[+] Input the filter: ")
-							sniff(offline="{}".format(self.file),filter = "{}".format(self.filt),prn=self.All)
-						except Exception as e: print "[!] Exception caught: {}".format(e)
 
 					elif self.input_list[0] == 'packetload':
 						try:
