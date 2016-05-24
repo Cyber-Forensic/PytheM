@@ -24,6 +24,8 @@ import sys
 import socket
 import fcntl
 import struct
+import urllib
+import base64
 
 
 
@@ -38,6 +40,12 @@ def encode(base):
 	encode = text.encode('{}'.format(base))
 	result = "[+] Result: {}".format(encode)
 	return result
+
+def cookiedecode():
+	cookie = raw_input("[+] Enter the cookie value: ")
+	res = base64.b64decode(urllib.unquote(cookie))
+	print
+	print res
 
 def get_myip(interface):
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
