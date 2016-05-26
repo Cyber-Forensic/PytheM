@@ -57,9 +57,11 @@ if __name__ == '__main__':
 	bruter.add_argument("-u","--username",dest='username',help ="Username to be used in the brute-force attack.")
 
 	mitm = parser.add_argument_group('[Man-In-The-Middle]')
-	mitm.add_argument("--spoof", action='store_true', help="Redirects traffic using ARP spoofing. ex: './pythem.py -i wlan0 --spoof -g gateway --sniff options'")
+	mitm.add_argument("--arpspoof", action='store_true', help="Redirects traffic using ARP spoofing. ex: './pythem.py -i wlan0 --arpspoof -g gateway --sniff options'")
 	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' ARP spoof mode: reply(rep) or requests (req) [default: rep].')
-	
+	mitm.add_argument("--dnsspoof", action='store_true', help="DNS spoof a specific domain query to the attacker machine, ARP spoofing required. ex: './pythem.py -i wlan0 --arpspoof -g 10.0.0.1 --dnsspoof --domain www.facebook.com")
+	mitm.add_argument("--domain",type=str, dest='domain', help="Domain name to dnsspoof and redirect to your machine.")	
+
 	remote = parser.add_argument_group('[Remote]')
 	remote.add_argument("--ssh", action='store_true', help="Waits for a SSH/TCP reverse connection from target. ex: ./pythem.py --ssh -l -p 7001")
 	remote.add_argument("-l","--server",dest='server',nargs='?' ,const='0.0.0.0', help="Server IP address to listen, default[0.0.0.0']")
@@ -67,7 +69,7 @@ if __name__ == '__main__':
 
 	sniff = parser.add_argument_group('[Sniffing]')
 	sniff.add_argument("--sniff", action="store_true", help="Enable packets sniffing. ex: './pythem.py -i wlan0 --sniff --filter manual")
-	sniff.add_argument("--filter",type=str, dest='filter', default='all', choices=['all','dns','http','manual'], help=" Sniffing filter: all, dns, http or manual [default=all]. ex: './pythem.py -i wlan0 --spoof -g 192.168.1.1 --filter http'")
+	sniff.add_argument("--filter",type=str, dest='filter', default='dns', choices=['dns','http','manual'], help=" Sniffing filter: dns, http or manual [default=dns]. ex: './pythem.py -i wlan0 --arpspoof -g 192.168.1.1 --filter http'")
 	sniff.add_argument("--pforensic",action="store_true", help=" Read .pcap file and start interactive shell for analyze the packets. ex: './pythem.py -i wlan0 --pforensic -f /path/file.pcap'.")
 
 	scan = parser.add_argument_group('[Scanning]')
@@ -83,7 +85,7 @@ if __name__ == '__main__':
 	web.add_argument("--urlbuster", action='store_true', help="Initialize a URL brute-force attack, requires a wordlist. ex: './pythem.py -i wlan0 --urlbuster -t http://testphp.vulnweb.com/index.php?id= -f /path/wordlist.txt'")
 	web.add_argument("--formbruter", action='store_true', help="Initialize a web page formulary brute-force attack, requires a wordlist. ex: './pythem.py -i wlan0 --formbruter -t http://testphp.vulnweb/login.php -f /path/wordlist.txt'")
 	web.add_argument("--cookiedump", action='store_true', help="Dump a cookie value from URL(Normal request or with Authentication required). ex: './pythem.py -i wlan0 --cookiedump -t http://testphp.vulnweb.com'.")
-	web.add_argument("--cookiedecode", action='store_true', help="Decode a cookie value.")
+	web.add_argument("--cookiedecode", action='store_true', help="Decode a base64 encoded cookie value.")
 
 	wireless = parser.add_argument_group('[Wireless]')
 	wireless.add_argument("--startmon", action='store_true' ,help='Initialize monitor mode on desired interface. ex. "./pythem.py -i wlan0 --startmon"')		
@@ -111,6 +113,7 @@ if __name__ == '__main__':
 	mode = args.mode
 
 	arpmode = args.arpmode
+	domain = args.domain
 
 	filter = args.filter
 	
@@ -141,7 +144,7 @@ if __name__ == '__main__':
 			sys.exit(1)
 
 
-	elif args.spoof and args.sniff:
+	elif args.arpspoof and args.sniff:
 		try:
 			myip = get_myip(interface)
 			mymac = get_mymac(interface)
@@ -156,9 +159,23 @@ if __name__ == '__main__':
 			spoof.stop()
 			print "[*] User requested shutdown."
 			sys.exit(1)
-	
-	elif args.spoof:
+	elif args.dnsspoof:
 		try:
+                        myip = get_myip(interface)
+			filter = "http"
+			from modules.dnspoisoner import DNSspoof
+			dnsspoof = DNSspoof(domain,myip)
+			dnsspoof.main()
+			from modules.sniffer import Sniffer
+			sniff = Sniffer(interface, filter)
+			sniff.start()
+		except KeyboardInterrupt:
+			dnsspoof.stop()
+			print "[*] User requested shutdown."
+			sys.exit(1)
+
+	elif args.arpspoof:
+		try:	
                         myip = get_myip(interface)
                         mymac = get_mymac(interface)
 			print "[*] Use --sniff to sniff intercepted packets, poisoning in threading."

@@ -38,9 +38,6 @@ class Sniffer(object):
 			print "[+] Sniffer with the filter: '{}' initialized.".format(self.filt)
 		self.wrpcap = raw_input("[*] Wish to write a .pcap file with the results in the actual directory?[y/n]: ")
 
-	def All(self, p):
-		print p
-		print
 
 	def DNSsniff(self, p):
 		if IP in p:
@@ -54,7 +51,12 @@ class Sniffer(object):
 			ip_src = p[IP].src
 			ip_dst = p[IP].dst
 			if p.haslayer(TCP) and p.getlayer(TCP).dport == 80 and p.haslayer(Raw):
-				print str(ip_src) + " --> " + str(ip_dst) + "\n" + p.getlayer(Raw).load
+                                print
+                                print "----------------------------------------------[PACKET]-------------------------------------------------------\n"
+                                print str(ip_src) + "---->" + str(ip_dst) + "\n"
+                                print "\n".join(p.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
+                                print "---------------------------------------------------------------------------------------------------------------"
+                                print
 
 
 	def MANUALsniff(self, p):
@@ -62,7 +64,13 @@ class Sniffer(object):
 			ip_src = p[IP].src
 			ip_dst = p[IP].dst
 			if p.haslayer(Raw):
-				print str(ip_src) + " --> " + str(ip_dst) + "\n" + p.getlayer(Raw).load
+                                print
+                                print "----------------------------------------------[PACKET]-------------------------------------------------------\n"
+                                print str(ip_src) + "---->" + str(ip_dst) + "\n"
+                                print "\n".join(p.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
+                                print "---------------------------------------------------------------------------------------------------------------"
+                                print
+
 
 	def start(self):
                 if self.filter == 'http' and self.wrpcap == 'y':
@@ -94,19 +102,6 @@ class Sniffer(object):
 			except KeyboardInterrupt:
 				print "\n[!] User requested shutdown."
 
-
-		elif self.filter == 'all' and self.wrpcap == 'y':
-			try:
-				p = sniff(iface=self.interface, prn=self.All)
-				time = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-				wrpcap("pythem{}.pcap".format(time),p)
-			except KeyboardInterrupt:
-				print "\n[!] User requested shutdown."
-
-		elif self.filter == 'all' and self.wrpcap != 'y':
-			print "[+] Global sniffer initialized"
-			p = sniff(iface=self.interface, prn=self.All)
-			print "\n[!] User requested shutdown."
 
                 elif self.filter == 'http' and self.wrpcap != 'y':
                         print "[+] HTTP sniffer initialized"
