@@ -69,7 +69,7 @@ class WEBbrutus(object):
 			br.open(self.target_url)
                         br.select_form(nr=0)
                         br['{}'.format(self.login)] = self.user           
-                        br['{}'.format(self.password)] = password
+                        br['{}'.format(self.psswd)] = password
 			br.submit()
 			response = br.response()
 			print "[+] [User:{} Pass:{}] = {}".format(self.user,password,response.geturl())
