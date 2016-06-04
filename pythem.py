@@ -59,8 +59,9 @@ if __name__ == '__main__':
 	mitm = parser.add_argument_group('[Man-In-The-Middle]')
 	mitm.add_argument("--arpspoof", action='store_true', help="Redirects traffic using ARP spoofing. ex: './pythem.py -i wlan0 --arpspoof -g gateway --sniff options'")
 	mitm.add_argument("--arpmode",type=str, dest='arpmode', default='rep', choices=["rep", "req"], help=' ARP spoof mode: reply(rep) or requests (req) [default: rep].')
-	mitm.add_argument("--dnsspoof", action='store_true', help="DNS spoof a specific domain query to the attacker machine, ARP spoofing required. ex: './pythem.py -i wlan0 --arpspoof -g 10.0.0.1 --dnsspoof --domain www.facebook.com")
+	mitm.add_argument("--dnsspoof", action='store_true', help="DNS spoof a specific domain query to the attacker machine, ARP spoofing required. ex: './pythem.py -i wlan0 --arpspoof -g 10.0.0.1 --dnsspoof --domain www.facebook.com --redirect 192.168.1.10")
 	mitm.add_argument("--domain",type=str, dest='domain', help="Domain name to dnsspoof and redirect to your machine.")	
+	mitm.add_argument("--redirect",type=str, dest='redirect', help="IP Address to send the redirected targets.")
 
 	remote = parser.add_argument_group('[Remote]')
 	remote.add_argument("--ssh", action='store_true', help="Waits for a SSH/TCP reverse connection from target. ex: ./pythem.py --ssh -l -p 7001")
@@ -114,6 +115,7 @@ if __name__ == '__main__':
 
 	arpmode = args.arpmode
 	domain = args.domain
+	redirect = args.redirect
 
 	filter = args.filter
 	
@@ -168,7 +170,7 @@ if __name__ == '__main__':
 			spoof.start()
 			filter = "http"
 			from modules.dnspoisoner import DNSspoof
-			dnsspoof = DNSspoof(domain,myip)
+			dnsspoof = DNSspoof(domain,redirect)
 			dnsspoof.main()
 			from modules.sniffer import Sniffer
 			sniff = Sniffer(interface, "http")
