@@ -5,6 +5,7 @@ PytheM is a python network/pentesting tool. Same has been developed in the hope 
 #Installation
 
 $sudo git clone https://github.com/m4n3dw0lf/PytheM/ <br />
+$cd PytheM <br/>
 $sudo pip install -r requirements.txt <br />
 $sudo ./pythem <br/>
 
